@@ -6,7 +6,7 @@ const Highlight = ({ text, query }) => {
     if (!text) return null;
     if (!query || !query.trim()) return <span>{text}</span>;
 
-    const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const regex = new RegExp(`(${safeQuery})`, "gi");
     const parts = text.split(regex);
 
