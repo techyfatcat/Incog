@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+/* --- Tailwind v4 Dark Mode Setup --- */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* --- Root & Global Resets --- */
+:root {
+  background-color: #e5e5e5;
+}
+
+html,
+body,
+#root {
+  background-color: #e5e5e5 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  /* Prevents the layout from jumping when scrollbar appears */
+  scrollbar-gutter: stable;
+}
+
+/* --- Dark Mode Background Override --- */
+.dark,
+.dark body,
+.dark #root {
+  background-color: #080B16 !important;
+}
+
+/* --- Base Transitions --- */
+@layer base {
+  body {
+    @apply transition-colors duration-500 ease-in-out font-sans;
+  }
+}
+
+/* --- Lenis Smooth Scroll Core (Required) --- */
+html.lenis {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* Improves performance by disabling iframe interactions during scroll */
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* --- Custom Project Animations & Shadows --- */
+
+/* The Bento Box Shadow - Adjusted for #e5e5e5 background */
+.profile-card-shadow {
+  box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.1);
+}
+
+/* HP Bar Loading Animation */
+@keyframes grow {
+  from {
+    width: 0%;
+  }
+}
+
+.hp-grow {
+  animation: grow 1.5s ease-out forwards;
+}
+
+/* Optional: Hide scrollbar track for a cleaner 'Pill' look */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #bababa;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* --- Resume PDF Fix for html2canvas (No OKLCH support) --- */
+.print-resume-fix {
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+
+  --color-indigo-50: #eef2ff;
+  --color-indigo-100: #e0e7ff;
+  --color-indigo-200: #c7d2fe;
+  --color-indigo-300: #a5b4fc;
+  --color-indigo-400: #818cf8;
+  --color-indigo-500: #6366f1;
+  --color-indigo-600: #4f46e5;
+  --color-indigo-700: #4338ca;
+
+  --color-emerald-500: #10b981;
+  --color-rose-500: #f43f5e;
+  --color-orange-500: #f97316;
+
+  --color-white: #ffffff;
+  --color-black: #000000;
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.animate-scanline {
+  animation: scanline 8s linear infinite;
+}
+
+/* Custom glow for social icons on hover */
+.social-glow:hover {
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+  transform: translateY(-2px);
+}
