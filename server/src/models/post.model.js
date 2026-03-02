@@ -12,7 +12,7 @@ const commentSchema = new mongoose.Schema({
     likes: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
-    }], // ❤️ Support for comment likes
+    }], // Support for comment likes
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -52,7 +52,7 @@ const postSchema = new mongoose.Schema({
     upvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     downvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 
-    // 💬 Embedded Comments
+    // Embedded Comments
     comments: [commentSchema],
     commentsCount: {
         type: Number,
@@ -68,7 +68,7 @@ const postSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-// 🚀 Text index for high-performance searching
+// Text index for high-performance searching
 postSchema.index({ title: 'text', content: 'text' });
 
 export const Post = mongoose.model('Post', postSchema);

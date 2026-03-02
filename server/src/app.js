@@ -24,7 +24,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-/* CORS - Ensure this matches your frontend URL */
+/* CORS */
 app.use(
     cors({
         origin: process.env.CLIENT_URL || "http://localhost:5173",
@@ -32,12 +32,10 @@ app.use(
     })
 );
 
-/* --- RATE LIMITING --- */
 /* --- RATE LIMITING DEFINITIONS --- */
 const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 200,
-    // Standardizing the response format to match your global error handler
     handler: (req, res) => {
         res.status(429).json({ success: false, message: "Too many requests, please try again later." });
     }

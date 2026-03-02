@@ -20,14 +20,14 @@ const otpSchema = new mongoose.Schema({
     },
 });
 
-/* 🔐 Hash OTP before saving */
+/* Hash OTP before saving */
 otpSchema.pre("save", async function (next) {
     if (!this.isModified("otp")) return next();
     this.otp = await bcrypt.hash(this.otp, 10);
     next();
 });
 
-/* 🔐 Compare entered OTP with stored hashed OTP */
+/* Compare entered OTP with stored hashed OTP */
 otpSchema.methods.compareOtp = async function (enteredOtp) {
     return await bcrypt.compare(enteredOtp, this.otp);
 };

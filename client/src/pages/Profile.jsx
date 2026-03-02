@@ -4,6 +4,8 @@ import { RefreshCw, Edit2, FileText, MessageSquare, Bookmark, Heart, Check, X, T
 import api from '../utils/api';
 import { deletePost } from '../services/postsService';
 
+const AVATAR_API = "http://localhost:5000/api/avatar";
+
 // Reusable Production-Level Confirm Modal
 const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => (
     <AnimatePresence>
@@ -116,7 +118,7 @@ export default function ProductionProfile() {
                                 <motion.div animate={isGenerating ? { rotate: 360 } : { rotate: 0 }} transition={{ type: 'spring', damping: 10 }} className="relative w-full h-full rounded-full p-1 z-10">
                                     <div className="relative w-full h-full rounded-full bg-white dark:bg-[#161B2E] overflow-hidden p-2 ring-1 ring-black/5 dark:ring-white/10 shadow-2xl">
                                         <img
-                                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.profile.avatarSeed}`}
+                                            src={`${AVATAR_API}/${userData.profile.avatarSeed}`}
                                             alt="Avatar"
                                             className="w-full h-full object-cover"
                                         />
