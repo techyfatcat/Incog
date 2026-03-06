@@ -10,12 +10,26 @@ import Resources from "./pages/Resources";
 import Profile from "./pages/Profile";
 import SettingsPage from "./pages/Settings";
 import About from "./pages/About";
+import NotFound from "./pages/NotFound";
 import SmoothScroll from "./components/SmoothScroll";
 import ProtectedRoute from "./components/ProtectedRoutes";
 
-// Note: CreatePostModal is likely imported and used inside your Navbar 
-// or CommunityPage now, so we don't need to import it here unless 
-// you're managing its global state at the App level.
+// Helper component to handle conditional Navbar rendering
+function Navigation() {
+  const location = useLocation();
+
+  // Define all valid paths. 
+  // We use a regex check for dynamic routes like /post/123
+  const validPaths = ["/", "/auth", "/about", "/resources", "/feed", "/profile", "/settings"];
+  const isDynamicPostPath = location.pathname.startsWith("/post/");
+
+  const isKnownRoute = validPaths.includes(location.pathname) || isDynamicPostPath;
+
+  // If the current path doesn't match any of our routes, hide the Navbar
+  if (!isKnownRoute) return null;
+
+  return <Navbar />;
+}
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -30,10 +44,12 @@ export default function App() {
     <ThemeProvider>
       <BrowserRouter>
         <ScrollToTop />
-        <Navbar />
+
+        {/* Navigation is now a child of BrowserRouter so it can use useLocation */}
+        <Navigation />
 
         <SmoothScroll>
-          <div className="pt-20 min-h-screen bg-[#e5e5e5] dark:bg-[#080B16] transition-colors duration-500 overflow-x-hidden">
+          <div className="pt-20 min-h-screen bg-[#e5e5e5] dark:bg-[#080B16] transition-colors duration-500 overflow-x-hidden relative">
             <Routes>
               {/* 🔓 Public Routes */}
               <Route path="/" element={<Home />} />
@@ -45,15 +61,12 @@ export default function App() {
               {/* 🔒 Protected Routes */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/post/:id" element={<PostDetail />} />
-                {/* The "/create-post" Route was removed because 
-                   it is now a Modal, not a standalone page. 
-                */}
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>
 
-              {/* 404 Fallback */}
-              <Route path="*" element={<div className="text-center py-20 dark:text-white font-bold">404 - Page Not Found</div>} />
+              {/* 🚀 404 Fallback - This will now trigger Navigation to return null */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
         </SmoothScroll>
