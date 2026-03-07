@@ -120,6 +120,7 @@ export default function Auth() {
 
             // Store Auth Data
             localStorage.setItem("token", res.data.token);
+            localStorage.setItem("refreshToken", res.data.refreshToken); // ⭐ IMPORTANT
             localStorage.setItem("userName", res.data.user.username);
             localStorage.setItem("userAvatar", res.data.user.avatar);
 

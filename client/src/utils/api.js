@@ -25,12 +25,16 @@ const processQueue = (error, token = null) => {
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem("token");
-        if (token) config.headers.Authorization = `Bearer ${token}`;
+
+        // Don't attach access token when refreshing
+        if (token && !config.url.includes("/auth/refresh-token")) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+
         return config;
     },
     (error) => Promise.reject(error)
 );
-
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
