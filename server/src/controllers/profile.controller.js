@@ -1,7 +1,7 @@
 import { User } from "../models/User.model.js";
 
 /**
- * 👤 GET MY PROFILE: Fetches current user data and Hero stats
+ * GET MY PROFILE: Fetches current user data and Hero stats
  */
 export const getMyProfile = async (req, res) => {
     try {
@@ -20,7 +20,7 @@ export const getMyProfile = async (req, res) => {
 };
 
 /**
- * 📝 UPDATE MY PROFILE: Updates username, bio, avatar, and settings
+ * UPDATE MY PROFILE: Updates username, bio, avatar, and settings
  */
 export const updateMyProfile = async (req, res) => {
     try {
@@ -29,7 +29,7 @@ export const updateMyProfile = async (req, res) => {
 
         if (!user) return res.status(404).json({ message: "User not found" });
 
-        // 🆔 Handle Username Change logic
+        // Handle Username Change logic
         if (username && username !== user.username) {
             // Basic regex to prevent spaces or weird characters if needed
             const cleanUsername = username.toLowerCase().replace(/\s/g, '');
@@ -39,11 +39,11 @@ export const updateMyProfile = async (req, res) => {
             user.username = cleanUsername;
         }
 
-        // 🎨 Basic Info & Customization
+        // Basic Info & Customization
         if (bio !== undefined) user.bio = bio;
         if (avatarSeed) user.avatarSeed = avatarSeed;
 
-        // 🧠 Handle Nested Settings
+        // Handle Nested Settings
         if (settings) {
             if (settings.allowDM !== undefined) user.settings.allowDM = settings.allowDM;
             if (settings.incognito !== undefined) user.settings.incognito = settings.incognito;
@@ -52,7 +52,7 @@ export const updateMyProfile = async (req, res) => {
 
         await user.save();
 
-        // 🛡️ Return user without sensitive data
+        // Return user without sensitive data
         const updatedUser = user.toObject();
         delete updatedUser.password;
 

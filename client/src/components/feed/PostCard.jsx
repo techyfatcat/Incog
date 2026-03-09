@@ -49,6 +49,17 @@ const PostCard = ({ post, searchQuery, onVote, onDelete }) => {
         }
     };
 
+    const tagColors = {
+        "Interview Experience": "bg-purple-500/10 text-purple-400 border-purple-500/20",
+        "OA Experience": "bg-blue-500/10 text-blue-400 border-blue-500/20",
+        "Final Offer Story": "bg-green-500/10 text-green-400 border-green-500/20",
+        "Rejection Experience": "bg-red-500/10 text-red-400 border-red-500/20",
+        "Salary Reveal": "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+        "Market Trend": "bg-pink-500/10 text-pink-400 border-pink-500/20",
+        "Study Resource": "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
+        "Placement Strategy": "bg-orange-500/10 text-orange-400 border-orange-500/20"
+    };
+
     return (
         <motion.div
             layout
@@ -125,6 +136,13 @@ const PostCard = ({ post, searchQuery, onVote, onDelete }) => {
 
                     {/* Content */}
                     <div className="space-y-2 mb-4 text-left">
+                        <div className="flex items-center">
+                            <span className={`text-[11px] font-bold px-2 py-1 rounded-lg border ${tagColors[post.postType] || "bg-gray-500/10 text-gray-400 border-gray-500/20"}`}>
+                                {post.postType}
+                            </span>
+                        </div>
+
+
                         <h2 className="text-[18px] font-black text-gray-900 dark:text-white tracking-tight leading-snug">
                             <Highlight text={post.title} query={searchQuery} />
                         </h2>

@@ -3,9 +3,9 @@ import { User } from "../models/User.model.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import jwt from "jsonwebtoken";
 
-/* =========================================================
-    🔹 HELPERS: Generate JWTs
-========================================================= */
+/* 
+ HELPERS: Generate JWTs
+*/
 const generateAccessToken = (userId) => {
     return jwt.sign(
         { id: userId },
@@ -17,14 +17,14 @@ const generateAccessToken = (userId) => {
 const generateRefreshToken = (userId) => {
     return jwt.sign(
         { id: userId },
-        process.env.JWT_REFRESH_SECRET, // Make sure to add this to your .env
+        process.env.JWT_REFRESH_SECRET,
         { expiresIn: "7d" } // Long-lived session token
     );
 };
 
-/* =========================================================
-    🔹 REFRESH TOKEN (The fix for self-logging out)
-========================================================= */
+/* 
+ REFRESH TOKEN (The fix for self-logging out)
+ */
 export const refreshToken = async (req, res) => {
     try {
         const { refreshToken } = req.body;
@@ -49,9 +49,9 @@ export const refreshToken = async (req, res) => {
     }
 };
 
-/* =========================================================
-    🔹 SEND OTP
-========================================================= */
+/* 
+ SEND OTP
+*/
 export const sendOtp = async (req, res) => {
     try {
         let { email } = req.body;
@@ -92,9 +92,9 @@ export const sendOtp = async (req, res) => {
     }
 };
 
-/* =========================================================
-    🔹 VERIFY OTP
-========================================================= */
+/* 
+    VERIFY OTP
+*/
 export const verifyOtp = async (req, res) => {
     try {
         let { email, otp } = req.body;
@@ -114,9 +114,9 @@ export const verifyOtp = async (req, res) => {
     }
 };
 
-/* =========================================================
-    🔹 REGISTER
-========================================================= */
+/* 
+ REGISTER
+*/
 export const register = async (req, res) => {
     try {
         let { email, username, password, avatar, purpose, otp } = req.body;
@@ -166,9 +166,9 @@ export const register = async (req, res) => {
     }
 };
 
-/* =========================================================
-    🔹 LOGIN
-========================================================= */
+/* 
+LOGIN
+*/
 export const login = async (req, res) => {
     try {
         let { email, password } = req.body;

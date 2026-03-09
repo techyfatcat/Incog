@@ -3,7 +3,7 @@ import { Post } from "../models/post.model.js";
 import { User } from "../models/User.model.js";
 
 /**
- * 🚀 CREATE POST: Includes Title, PostType, and +20 HP Reward
+ * CREATE POST: Includes Title, PostType, and +20 HP Reward
  */
 export const createPost = async (req, res) => {
     try {
@@ -39,7 +39,7 @@ export const createPost = async (req, res) => {
 };
 
 /**
- * 📡 GET ALL POSTS: Handles Search, Type Filtering, and Sorting
+ * GET ALL POSTS: Handles Search, Type Filtering, and Sorting
  */
 export const getAllPosts = async (req, res) => {
     try {
@@ -75,7 +75,7 @@ export const getAllPosts = async (req, res) => {
 };
 
 /**
- * 🗳️ VOTE POST (Combined Up/Down Logic)
+ * VOTE POST (Combined Up/Down Logic)
  */
 export const handleVote = async (req, res) => {
     try {
@@ -108,7 +108,7 @@ export const handleVote = async (req, res) => {
 };
 
 /**
- * 🗑️ DELETE POST: Removes post and deducts 20 HP
+ * DELETE POST: Removes post and deducts 20 HP
  */
 export const deletePost = async (req, res) => {
     try {
@@ -133,7 +133,7 @@ export const deletePost = async (req, res) => {
 };
 
 /**
- * 🔍 GET SINGLE POST: For PostDetail page
+ * GET SINGLE POST: For PostDetail page
  */
 export const getPostById = async (req, res) => {
     try {
@@ -147,7 +147,7 @@ export const getPostById = async (req, res) => {
 };
 
 /**
- * 👤 GET POSTS BY USER: For profile pages
+ * GET POSTS BY USER: For profile pages
  */
 export const getPostsByUser = async (req, res) => {
     try {
@@ -162,7 +162,7 @@ export const getPostsByUser = async (req, res) => {
 };
 
 /**
- * 💬 ADD COMMENT: +5 HP Reward
+ * ADD COMMENT: +5 HP Reward
  */
 export const addComment = async (req, res) => {
     try {
@@ -194,7 +194,7 @@ export const addComment = async (req, res) => {
 };
 
 /**
- * ❤️ TOGGLE COMMENT LIKE
+ * TOGGLE COMMENT LIKE
  */
 export const toggleCommentLike = async (req, res) => {
     try {
@@ -219,7 +219,7 @@ export const toggleCommentLike = async (req, res) => {
 };
 
 /**
- * 👤 GET ALL COMMENTS BY USER: Aggregation for Profile Activity
+ * GET ALL COMMENTS BY USER: Aggregation for Profile Activity
  */
 export const getUserComments = async (req, res) => {
     try {
@@ -246,7 +246,7 @@ export const getUserComments = async (req, res) => {
 };
 
 /**
- * 🗑️ DELETE COMMENT
+ * DELETE COMMENT
  */
 export const deleteComment = async (req, res) => {
     try {

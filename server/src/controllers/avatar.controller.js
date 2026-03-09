@@ -4,7 +4,6 @@ export const generateAvatar = (req, res) => {
     const seed = req.params.seed;
     const hash = hashSeed(seed);
 
-    // 1. DiceBear Style Candy Palette
     const bgColors = [
         "#FF6B6B", // Red-Pink
         "#4ECDC4", // Teal
