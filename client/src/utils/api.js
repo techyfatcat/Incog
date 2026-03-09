@@ -27,7 +27,7 @@ api.interceptors.request.use(
         const token = localStorage.getItem("token");
 
         // Don't attach access token when refreshing
-        if (token && !config.url.includes("/auth/refresh-token")) {
+        if (token && !config.url.includes("/auth/refresh")) {
             config.headers.Authorization = `Bearer ${token}`;
         }
 
