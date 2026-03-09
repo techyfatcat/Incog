@@ -63,7 +63,7 @@ export const getAllPosts = async (req, res) => {
         if (sort === 'Most Commented') sortOption = { commentsCount: -1 };
 
         const posts = await Post.find(query)
-            .populate("author", "username avatarSeed")
+            .populate("author", "username avatar avatarSeed")
             .sort(sortOption)
             .skip((Number(page) - 1) * Number(limit))
             .limit(Number(limit));
@@ -138,7 +138,7 @@ export const deletePost = async (req, res) => {
 export const getPostById = async (req, res) => {
     try {
         const { id } = req.params;
-        const post = await Post.findById(id).populate("author", "username avatarSeed");
+        const post = await Post.findById(id).populate("author", "username avatar avatarSeed");
         if (!post) return res.status(404).json({ message: "Post not found" });
         res.json(post);
     } catch (error) {
@@ -153,7 +153,7 @@ export const getPostsByUser = async (req, res) => {
     try {
         const { userId } = req.params;
         const posts = await Post.find({ author: userId })
-            .populate("author", "username avatarSeed")
+            .populate("author", "username avatar avatarSeed")
             .sort({ createdAt: -1 });
         res.json(posts);
     } catch (error) {
@@ -183,7 +183,7 @@ export const addComment = async (req, res) => {
             id,
             { $push: { comments: newComment }, $inc: { commentsCount: 1 } },
             { new: true }
-        ).populate("author", "username avatarSeed");
+        ).populate("author", "username avatar avatarSeed");
 
         await User.findByIdAndUpdate(req.user.id, { $inc: { "stats.hp": 5 } });
 

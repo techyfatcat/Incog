@@ -68,9 +68,13 @@ const PostCard = ({ post, searchQuery, onVote, onDelete }) => {
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
                             <img
-                                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${post.author?.avatarSeed || post.username}`}
+                                src={
+                                    post.isAnonymous
+                                        ? "/incognito-avatar.png"
+                                        : `http://localhost:5000/api/avatar/${post.author?.avatarSeed || post.author?._id}`
+                                }
                                 alt="avatar"
-                                className="w-9 h-9 rounded-full bg-gray-100 dark:bg-white/5 object-cover border border-gray-200 dark:border-white/10"
+                                className="w-9 h-9 rounded-full object-cover"
                             />
                             <div className="flex flex-col text-left">
                                 <span className="text-[14px] font-bold text-gray-900 dark:text-white/90">
