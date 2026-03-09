@@ -42,15 +42,29 @@ export default function CommunityPage() {
     const { posts, loading, handleVote, refreshFeed } = usePosts(searchQuery, appliedFilters);
 
     const handleApplyFilters = () => {
-        setAppliedFilters({ types: selectedTypes, sort: sortBy });
+
+        if (selectedTypes.length === 0) {
+            setAppliedFilters({
+                types: [],
+                sort: sortBy
+            });
+        } else {
+            setAppliedFilters({
+                types: selectedTypes,
+                sort: sortBy
+            });
+        }
+
     };
 
     const resetFilters = () => {
         setSelectedTypes(postTypes);
         setSortBy('Newest');
-        setAppliedFilters({ types: postTypes, sort: 'Newest' });
+        setAppliedFilters({
+            types: postTypes,
+            sort: 'Newest'
+        });
     };
-
     const handleCreatePostClick = () => {
         // Double-check token before opening
         const token = localStorage.getItem("token");

@@ -16,11 +16,19 @@ export const usePosts = (searchQuery, activeFilters) => {
     const fetchPosts = useCallback(async () => {
         setLoading(true);
         try {
-            const params = {
-                search: debouncedQuery,
-                types: activeFilters?.types?.join(','),
-                sort: activeFilters?.sort
-            };
+            const params = {};
+
+            if (debouncedQuery) {
+                params.search = debouncedQuery;
+            }
+
+            if (activeFilters?.types?.length) {
+                params.types = activeFilters.types.join(',');
+            }
+
+            if (activeFilters?.sort) {
+                params.sort = activeFilters.sort;
+            }
 
             const data = await getAllPosts(params);
             // Ensure we handle both {posts: []} and [] formats
