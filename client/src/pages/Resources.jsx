@@ -11,7 +11,7 @@ import TestInterface from '../components/PreparationOS/OASimulator/TestInterface
 import TestResult from '../components/PreparationOS/OASimulator/TestResult';
 // Salary Tool Component (Make sure to create this file next!)
 import SalaryLab from '../components/PreparationOS/Tools/SalaryLab';
-
+import ToolLayout from "../components/PreparationOS/UI/ToolLayout";
 // UI Components
 import { ToolCard, SubjectCard } from '../components/PreparationOS/UI/Cards';
 
@@ -27,16 +27,30 @@ export default function ResourcesPage() {
     // --- Navigation Handlers ---
 
     // 1. Resume Builder View
+    // 1. Resume Builder View
     if (view === 'resume-builder') {
-        return <ResumeBuilder onBack={() => setView('hub')} />;
+        return (
+            <ToolLayout>
+                <ResumeBuilder onBack={() => setView('hub')} />
+            </ToolLayout>
+        );
     }
+
     if (view === 'oa-simulator') {
-        return <OASimulator onBack={() => setView('hub')} />;
+        return (
+            <ToolLayout>
+                <OASimulator onBack={() => setView('hub')} />
+            </ToolLayout>
+        );
     }
 
     // 2. Salary Trajectory Lab View
     if (view === 'salary-lab') {
-        return <SalaryLab onBack={() => setView('hub')} />;
+        return (
+            <ToolLayout>
+                <SalaryLab onBack={() => setView('hub')} />
+            </ToolLayout>
+        );
     }
 
     return (
