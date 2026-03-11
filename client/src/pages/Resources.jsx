@@ -6,7 +6,9 @@ import {
 
 // Resume Components
 import ResumeBuilder from '../components/PreparationOS/ResumeBuilder';
-
+import OASimulator from '../components/PreparationOS/OASimulator/OASimulator';
+import TestInterface from '../components/PreparationOS/OASimulator/TestInterface';
+import TestResult from '../components/PreparationOS/OASimulator/TestResult';
 // Salary Tool Component (Make sure to create this file next!)
 import SalaryLab from '../components/PreparationOS/Tools/SalaryLab';
 
@@ -27,6 +29,9 @@ export default function ResourcesPage() {
     // 1. Resume Builder View
     if (view === 'resume-builder') {
         return <ResumeBuilder onBack={() => setView('hub')} />;
+    }
+    if (view === 'oa-simulator') {
+        return <OASimulator onBack={() => setView('hub')} />;
     }
 
     // 2. Salary Trajectory Lab View
@@ -107,6 +112,14 @@ export default function ResourcesPage() {
                                 icon={<Globe size={28} />}
                                 title="Mock Interviews"
                                 desc="Practice live with anonymous peers in real-time."
+                            />
+
+                            <ToolCard
+                                icon={<Code2 size={28} className="text-indigo-500" />}
+                                title="OA Simulator"
+                                desc="Practice real company-style timed coding tests."
+                                onClick={() => setView('oa-simulator')} // This triggers the view switch
+                                active
                             />
                         </div>
                     )}

@@ -47,7 +47,7 @@ const DevCard = ({ name, role, description }) => {
     return (
         <motion.div
             whileHover={{ y: -8 }}
-            className="group relative bg-white dark:bg-[#151921] border border-slate-200 dark:border-white/5 p-8 rounded-[32px] shadow-xl overflow-hidden transition-all duration-300 hover:shadow-blue-500/10"
+            className="group relative bg-[#e5e5e5] dark:bg-[#080B16] border border-slate-200 dark:border-white/5 p-8 rounded-[32px] shadow-xl overflow-hidden transition-all duration-300 hover:shadow-blue-500/10"
         >
             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-blue-600/15 transition-colors" />
 
@@ -89,7 +89,7 @@ export default function About() {
     const bgY = useSpring(useTransform(mouseY, [0, window.innerHeight], [-20, 20]));
 
     return (
-        <div className="min-h-screen bg-[#F8FAFF] dark:bg-[#080B16] text-slate-900 dark:text-slate-100 selection:bg-blue-500/30 overflow-x-hidden">
+        <div className="min-h-screen bg-[#e5e5e5] dark:bg-[#080B16] text-slate-900 dark:text-slate-100 selection:bg-blue-500/30 overflow-x-hidden">
 
             {/* --- INTERACTIVE BACKGROUND --- */}
             <motion.div
