@@ -1,28 +1,27 @@
 
 import React, { useState, useEffect } from "react";
+import Editor from "@monaco-editor/react";
 
 export default function TestInterface({ test, onExit, onFinish }) {
+
     const totalTime = (test?.time || 0) * 60;
+
     const [timeLeft, setTimeLeft] = useState(totalTime);
     const [currentQuestion, setCurrentQuestion] = useState(1);
 
-    // SECURITY + TIMER
+    const [code, setCode] = useState("// Write your code here");
+    const [language, setLanguage] = useState("cpp");
+
+    const [activeTab, setActiveTab] = useState("input");
+
+    const [input, setInput] = useState("");
+    const [output, setOutput] = useState("");
+
+    // TIMER
     useEffect(() => {
-        const preventAction = (e) => e.preventDefault();
-
-        document.addEventListener("copy", preventAction);
-        document.addEventListener("paste", preventAction);
-
-        const handleVisibility = () => {
-            if (document.hidden) {
-                alert("⚠️ Tab switching detected.");
-            }
-        };
-
-        document.addEventListener("visibilitychange", handleVisibility);
 
         const timer = setInterval(() => {
-            setTimeLeft((prev) => {
+            setTimeLeft(prev => {
                 if (prev <= 1) {
                     clearInterval(timer);
                     submitTest();
@@ -32,18 +31,14 @@ export default function TestInterface({ test, onExit, onFinish }) {
             });
         }, 1000);
 
-        return () => {
-            document.removeEventListener("copy", preventAction);
-            document.removeEventListener("paste", preventAction);
-            document.removeEventListener("visibilitychange", handleVisibility);
-            clearInterval(timer);
-        };
+        return () => clearInterval(timer);
+
     }, []);
 
     const formatTime = (seconds) => {
         const m = Math.floor(seconds / 60);
         const s = seconds % 60;
-        return `${m}:${s < 10 ? "0" : ""}${s}`;
+        return `${m}:${s < 10 ? "0" : ""}${s} `;
     };
 
     const submitTest = () => {
@@ -55,103 +50,211 @@ export default function TestInterface({ test, onExit, onFinish }) {
         }
     };
 
+    const runCode = () => {
+
+        setOutput("Running...");
+
+        setTimeout(() => {
+            setOutput("Example Output:\n2");
+        }, 1000);
+
+    };
+
     return (
-        <div className="fixed inset-0 z-[200] bg-[#0F172A] text-white flex flex-col select-none">
+
+        <div className="fixed inset-0 z-[200] flex flex-col bg-[#e5e5e5] dark:bg-[#080B16]">
 
             {/* HEADER */}
-            <div className="h-16 border-b border-white/5 px-6 flex items-center justify-between bg-[#111827]">
+
+            <div className="h-16 flex items-center justify-between px-6 border-b border-slate-200 dark:border-white/10 bg-white dark:bg-[#111827]">
+
                 <div className="flex items-center gap-4">
-                    <span className="text-xs font-black tracking-widest text-indigo-500 uppercase">
+
+                    <span className="text-xs font-black tracking-widest text-indigo-600 uppercase">
                         {test?.company} Simulation
                     </span>
 
-                    <div className="h-4 w-[1px] bg-white/10" />
-
-                    <span className={`font-mono font-bold ${timeLeft < 300 ? "text-red-500 animate-pulse" : "text-emerald-500"}`}>
+                    <span className="font-mono font-bold text-emerald-500">
                         {formatTime(timeLeft)}
                     </span>
+
                 </div>
 
                 <div className="flex gap-3">
+
                     <button
                         onClick={onExit}
-                        className="px-4 py-1.5 text-xs font-bold text-slate-400 hover:text-white transition-colors"
+                        className="px-4 py-1 text-xs font-bold text-slate-600 hover:text-black dark:text-slate-400"
                     >
                         Quit
                     </button>
 
                     <button
                         onClick={submitTest}
-                        className="px-6 py-1.5 bg-indigo-600 text-white text-xs font-black rounded-lg shadow-lg shadow-indigo-500/20"
+                        className="px-6 py-1 text-xs font-bold bg-indigo-600 text-white rounded-lg"
                     >
-                        Submit Test
+                        Submit
                     </button>
+
                 </div>
+
             </div>
 
-            {/* MAIN AREA */}
-            <div className="flex-1 flex overflow-hidden">
 
-                {/* QUESTION PANEL */}
-                <div className="w-1/3 border-r border-white/5 overflow-y-auto p-8 bg-[#0F172A]">
+            {/* MAIN CONTENT */}
 
-                    <span className="text-[10px] font-black text-indigo-500 uppercase">
+            <div className="flex flex-1 overflow-hidden">
+
+                {/* PROBLEM PANEL */}
+
+                <div className="w-1/3 border-r border-slate-200 dark:border-white/10 p-8 bg-white dark:bg-[#080B16] overflow-y-auto">
+
+                    <span className="text-xs font-bold text-indigo-600 uppercase">
                         Question {currentQuestion}
                     </span>
 
-                    <h2 className="text-2xl font-bold mt-2 mb-6">
-                        Find Minimum Swaps
+                    <h2 className="text-2xl font-bold mt-3 mb-6 dark:text-white">
+                        Minimum Swaps to Sort
                     </h2>
 
-                    <p className="text-slate-400 text-sm leading-relaxed">
-                        Given an array of n integers, find the minimum number of swaps
-                        required to sort the array in ascending order.
+                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                        Given an array of integers, find the minimum number of swaps required
+                        to sort the array in ascending order.
                     </p>
 
-                    <div className="bg-black/30 p-4 rounded-xl font-mono text-xs mt-4 border border-white/5">
-                        Input: [4,3,2,1] <br />
-                        Output: 2 <br />
-                        Explanation: Swap (4,1) then (3,2)
+                    <div className="mt-6 p-4 rounded-xl bg-slate-100 dark:bg-black/30 text-xs font-mono">
+
+                        Input:
+                        <br />
+                        [4,3,2,1]
+
+                        <br /><br />
+
+                        Output:
+                        <br />
+                        2
+
                     </div>
+
                 </div>
 
-                {/* CODE EDITOR AREA */}
+
+                {/* EDITOR PANEL */}
+
                 <div className="flex-1 flex flex-col bg-[#1E1E1E]">
 
-                    <div className="h-10 bg-[#252526] flex items-center px-4 border-b border-white/5">
-                        <select className="bg-transparent text-xs font-bold outline-none text-slate-300 cursor-pointer">
-                            <option>C++ (GCC 11)</option>
-                            <option>Java 17</option>
-                            <option>Python 3.10</option>
+                    {/* EDITOR HEADER */}
+
+                    <div className="h-10 flex items-center justify-between px-4 bg-[#252526]">
+
+                        <select
+                            value={language}
+                            onChange={(e) => setLanguage(e.target.value)}
+                            className="text-xs bg-[#1e1e1e] text-white px-2 py-1 rounded"
+                        >
+                            <option value="cpp">C++</option>
+                            <option value="c">C</option>
+                            <option value="java">Java</option>
+                            <option value="python">Python</option>
                         </select>
+
+                        <button
+                            onClick={runCode}
+                            className="px-4 py-1 text-xs bg-indigo-600 text-white rounded-md"
+                        >
+                            Run Code
+                        </button>
+
                     </div>
 
-                    <div className="flex-1 font-mono text-sm p-6 text-emerald-500/80">
-                        // Write your code here...
+
+                    {/* MONACO EDITOR */}
+
+                    <Editor
+                        height="60%"
+                        language={language}
+                        theme="vs-dark"
+                        value={code}
+                        onChange={(value) => setCode(value)}
+                    />
+
+
+                    {/* TERMINAL PANEL */}
+
+                    <div className="flex flex-col border-t border-black bg-black text-green-400">
+
+                        {/* TABS */}
+
+                        <div className="flex text-xs border-b border-gray-800">
+
+                            <button
+                                onClick={() => setActiveTab("input")}
+                                className={`px - 4 py - 2 ${activeTab === "input" ? "bg-gray-900" : ""} `}
+                            >
+                                Custom Input
+                            </button>
+
+                            <button
+                                onClick={() => setActiveTab("output")}
+                                className={`px - 4 py - 2 ${activeTab === "output" ? "bg-gray-900" : ""} `}
+                            >
+                                Output
+                            </button>
+
+                        </div>
+
+
+                        {/* CONTENT */}
+
+                        {activeTab === "input" && (
+
+                            <textarea
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                placeholder="Enter custom input here"
+                                className="h-24 bg-black text-white text-xs p-3 outline-none"
+                            />
+
+                        )}
+
+                        {activeTab === "output" && (
+
+                            <div className="h-24 text-xs p-3 overflow-auto">
+                                {output || "Program output will appear here"}
+                            </div>
+
+                        )}
+
                     </div>
+
                 </div>
+
             </div>
+
 
             {/* QUESTION NAVIGATOR */}
-            <div className="h-16 border-t border-white/5 px-6 flex items-center bg-[#111827]">
 
-                <div className="flex gap-2">
-                    {[1, 2, 3, 4, 5].map((q) => (
-                        <button
-                            key={q}
-                            onClick={() => setCurrentQuestion(q)}
-                            className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${currentQuestion === q
-                                    ? "bg-indigo-600 text-white"
-                                    : "bg-white/5 text-slate-400 hover:bg-white/10"
-                                }`}
-                        >
-                            {q}
-                        </button>
-                    ))}
-                </div>
+            <div className="h-16 flex items-center px-6 gap-3 border-t border-slate-200 dark:border-white/10 bg-white dark:bg-[#111827]">
+
+                {[1, 2, 3, 4, 5].map(q => (
+
+                    <button
+                        key={q}
+                        onClick={() => setCurrentQuestion(q)}
+                        className={`w - 10 h - 10 rounded - lg font - bold text - sm ${currentQuestion === q
+                                ? "bg-indigo-600 text-white"
+                                : "bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300"
+                            } `}
+                    >
+                        {q}
+                    </button>
+
+                ))}
 
             </div>
+
         </div>
+
     );
 }
 
