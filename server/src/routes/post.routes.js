@@ -9,7 +9,8 @@ import {
     addComment,
     deleteComment,
     toggleCommentLike,
-    getUserComments
+    getUserComments,
+    reportPost
 } from '../controllers/post.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
 
@@ -25,7 +26,7 @@ router.get('/profile/comments', protect, getUserComments);
 router.get('/:id', getPostById);
 router.patch('/:postId/vote', protect, handleVote);
 router.delete('/:postId', protect, deletePost);
-
+router.patch('/:postId/report', protect, reportPost);
 router.post('/:id/comment', protect, addComment);
 router.delete('/:id/comment/:commentId', protect, deleteComment);
 router.put('/:id/comment/:commentId/like', protect, toggleCommentLike);

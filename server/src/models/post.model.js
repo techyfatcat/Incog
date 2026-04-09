@@ -48,6 +48,14 @@ const postSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+
+    reports: [{
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        reason: { type: String, default: "Spam or Inappropriate" },
+        createdAt: { type: Date, default: Date.now }
+    }],
+    reportCount: { type: Number, default: 0 },
+    isFlagged: { type: Boolean, default: false },
     // Tracking arrays to prevent double-voting
     upvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     downvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],

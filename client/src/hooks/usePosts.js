@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getAllPosts, votePost } from '../services/postsService';
+import { getAllPosts, votePost, reportPost as reportPostService } from '../services/postsService';
 
 export const usePosts = (searchQuery, activeFilters) => {
     const [posts, setPosts] = useState([]);
@@ -47,7 +47,6 @@ export const usePosts = (searchQuery, activeFilters) => {
 
     // 🚀 Optimistic Vote Handler
     const handleVote = useCallback(async (postId, voteType) => {
-        // Keep a snapshot for rollback if API fails
         const originalPosts = [...posts];
 
         // Update UI immediately (Optimistic UI)
@@ -61,7 +60,6 @@ export const usePosts = (searchQuery, activeFilters) => {
             })
         );
 
-        // Persist change to database
         try {
             await votePost(postId, voteType);
         } catch (error) {
@@ -70,11 +68,28 @@ export const usePosts = (searchQuery, activeFilters) => {
         }
     }, [posts]);
 
+    // 🚩 Report Post Handler
+    const handleReport = useCallback(async (postId, reason) => {
+        try {
+            await reportPostService(postId, reason); // Pass reason to your service
+
+            // 🚀 THE HIDE LOGIC: Remove it from the local posts array immediately
+            setTimeout(() => {
+                setPosts(prev => prev.filter(post => post._id !== postId));
+            }, 1600); // Matches the UI success message duration
+
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.response?.data?.message || "Failed to report" };
+        }
+    }, []);
+
     return {
         posts,
         loading,
         debouncedQuery,
         handleVote,
+        handleReport, // New capability
         refreshFeed: fetchPosts
     };
 };

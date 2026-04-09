@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Search, Plus, Filter,
-    Flame, History, ChevronRight
+    Flame, History, ChevronRight, SlidersHorizontal, RotateCcw, Check
 } from 'lucide-react';
 import { usePosts } from '../hooks/usePosts';
 import PostCard from '../components/feed/PostCard';
@@ -81,48 +81,98 @@ export default function CommunityPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
                     {/* 🛠️ LEFT SIDEBAR: FILTERS */}
-                    <aside className="hidden lg:block lg:col-span-3 sticky top-10">
-                        <div className="bg-white dark:bg-[#0A0C14] border border-gray-200 dark:border-white/5 rounded-[2rem] p-6 shadow-sm">
-                            <div className="flex items-center gap-2 mb-6 text-gray-900 dark:text-white border-b border-gray-100 dark:border-white/5 pb-4">
-                                <Filter size={18} className="text-blue-500" />
-                                <h2 className="font-bold">Filters</h2>
-                            </div>
-                            <div className="space-y-6">
-                                <div>
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-3">Post Type</label>
-                                    <div className="space-y-2">
-                                        {postTypes.map(type => (
-                                            <label key={type} className="flex items-center gap-3 cursor-pointer group">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectedTypes.includes(type)}
-                                                    onChange={() => setSelectedTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type])}
-                                                    className="rounded border-gray-300 dark:border-white/10 dark:bg-white/5 text-blue-500 focus:ring-0 w-4 h-4 cursor-pointer"
-                                                />
-                                                <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-blue-500 transition-colors">{type}</span>
-                                            </label>
-                                        ))}
-                                    </div>
+                    <aside className="hidden lg:block lg:col-span-3 sticky top-10 px-2">
+                        <div className="bg-white dark:bg-[#0A0C14] rounded-[24px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 dark:border-white/[0.05]">
+
+                            {/* HEADER: Minimal & Clean */}
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-2">
+                                    <SlidersHorizontal size={16} className="text-blue-500" />
+                                    <h2 className="text-[14px] font-bold text-gray-900 dark:text-white tracking-tight font-sans">
+                                        Filters
+                                    </h2>
                                 </div>
-                                <div>
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-3">Sort By</label>
-                                    <div className="space-y-1">
-                                        {['Newest', 'Most Upvoted', 'Most Commented'].map(opt => (
+                                <button
+                                    onClick={resetFilters}
+                                    className="text-[11px] font-semibold text-gray-400 hover:text-blue-500 transition-colors font-sans uppercase tracking-wider"
+                                >
+                                    Reset
+                                </button>
+                            </div>
+
+                            {/* CATEGORY SECTION */}
+                            <div className="mb-6">
+                                <p className="text-[12px] font-bold text-gray-400 dark:text-gray-500 mb-3 font-sans uppercase tracking-tight">
+                                    Category
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                    {postTypes.map(type => {
+                                        const active = selectedTypes.includes(type);
+                                        return (
+                                            <button
+                                                key={type}
+                                                onClick={() =>
+                                                    setSelectedTypes(prev =>
+                                                        prev.includes(type)
+                                                            ? prev.filter(t => t !== type)
+                                                            : [...prev, type]
+                                                    )
+                                                }
+                                                className={`
+                            px-3 py-1.5 rounded-full text-[11px] font-medium transition-all border font-sans
+                            ${active
+                                                        ? 'bg-[#F0F7FF] dark:bg-blue-500/10 border-blue-500 text-blue-600 dark:text-blue-400'
+                                                        : 'bg-white dark:bg-transparent border-gray-100 dark:border-white/10 text-gray-500 hover:border-gray-300'
+                                                    }
+                        `}
+                                            >
+                                                {type}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* SORT SECTION: Clean Radio List */}
+                            <div className="mb-8">
+                                <p className="text-[12px] font-bold text-gray-400 dark:text-gray-500 mb-3 font-sans uppercase tracking-tight">
+                                    Sort By
+                                </p>
+                                <div className="flex flex-col gap-1">
+                                    {["Newest", "Most Upvoted", "Most Commented"].map((opt) => {
+                                        const active = sortBy === opt;
+                                        return (
                                             <button
                                                 key={opt}
                                                 onClick={() => setSortBy(opt)}
-                                                className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold transition-all ${sortBy === opt ? 'bg-blue-500 text-white shadow-md' : 'hover:bg-gray-100 dark:hover:bg-white/5 text-gray-500'}`}
+                                                className={`
+                            flex items-center gap-3 px-3 py-2 rounded-xl text-[12px] font-medium transition-all font-sans
+                            ${active
+                                                        ? 'text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-500/5'
+                                                        : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+                                                    }
+                        `}
                                             >
+                                                <div className={`
+                            w-4 h-4 rounded-full border flex items-center justify-center transition-all shrink-0
+                            ${active ? 'bg-blue-500 border-blue-500' : 'border-gray-300 dark:border-white/20'}
+                        `}>
+                                                    {active && <Check size={10} className="text-white" strokeWidth={4} />}
+                                                </div>
                                                 {opt}
                                             </button>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div className="pt-4 flex gap-2 border-t border-gray-100 dark:border-white/5 mt-4">
-                                    <button onClick={resetFilters} className="flex-1 py-2 text-[10px] font-bold uppercase bg-gray-100 dark:bg-white/5 rounded-xl dark:text-gray-400 hover:bg-gray-200 transition-colors">Reset</button>
-                                    <button onClick={handleApplyFilters} className="flex-1 py-2 text-[10px] font-bold uppercase bg-blue-500 text-white rounded-xl shadow-lg shadow-blue-500/20 hover:bg-blue-600 transition-colors">Apply</button>
+                                        );
+                                    })}
                                 </div>
                             </div>
+
+                            {/* COMPACT APPLY BUTTON */}
+                            <button
+                                onClick={handleApplyFilters}
+                                className="w-full py-3.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-[13px] font-bold font-sans transition-all shadow-md shadow-blue-500/10 active:scale-[0.98]"
+                            >
+                                Apply Filters
+                            </button>
                         </div>
                     </aside>
 

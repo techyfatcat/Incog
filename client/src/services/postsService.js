@@ -59,3 +59,8 @@ export const deletePost = async (postId) => {
         throw error;
     }
 };
+
+export const reportPost = async (postId, reason) => {
+    const { data } = await axios.patch(`/api/posts/${postId}/report`, { reason });
+    return data;
+};

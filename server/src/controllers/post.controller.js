@@ -132,6 +132,54 @@ export const deletePost = async (req, res) => {
     }
 };
 
+
+/**
+ * REPORT POST: Track reports and auto-flag if threshold reached
+ */
+export const reportPost = async (req, res) => {
+    try {
+        const { postId } = req.params;
+        const userId = req.user.id;
+
+        const post = await Post.findById(postId);
+
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+
+        // Check if this specific user has already reported this post
+        const alreadyReported = post.reports.some(
+            (report) => report.user.toString() === userId
+        );
+
+        if (alreadyReported) {
+            return res.status(400).json({ message: "You have already reported this post" });
+        }
+
+        // Add the report to the array
+        post.reports.push({
+            user: userId,
+            reason: "Community Flag"
+        });
+
+        post.reportCount = post.reports.length;
+
+        // Auto-moderation: Flag post if it hits a certain threshold (e.g., 5 reports)
+        if (post.reportCount >= 5) {
+            post.isFlagged = true;
+        }
+
+        await post.save();
+
+        res.status(200).json({
+            message: "Report received. Thank you for keeping Incog safe.",
+            reportCount: post.reportCount
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Failed to report post" });
+    }
+};
 /**
  * GET SINGLE POST: For PostDetail page
  */
