@@ -12,7 +12,7 @@ import CreatePostModal from '../components/CreatePostModal';
 export default function CommunityPage() {
     const navigate = useNavigate();
     const location = useLocation();
-
+    const [recentPosts, setRecentPosts] = useState([]);
     // 🛡️ AUTH STATE: Relying on 'token' to stay in sync with ProtectedRoute
     const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,6 +24,34 @@ export default function CommunityPage() {
         // Listen for storage changes (like login/logout in other tabs)
         window.addEventListener('storage', syncAuth);
         return () => window.removeEventListener('storage', syncAuth);
+    }, []);
+
+    useEffect(() => {
+
+        const loadRecent = () => {
+
+            const stored =
+                JSON.parse(
+                    localStorage.getItem("recentPosts")
+                ) || [];
+
+            setRecentPosts(stored);
+
+        };
+
+        loadRecent();
+
+        window.addEventListener(
+            "storage",
+            loadRecent
+        );
+
+        return () =>
+            window.removeEventListener(
+                "storage",
+                loadRecent
+            );
+
     }, []);
 
     // 📝 FILTER CONFIG
@@ -221,6 +249,16 @@ export default function CommunityPage() {
                                                 post={post}
                                                 searchQuery={searchQuery}
                                                 onVote={(postId, type) => handleVote(postId, type)}
+                                                onReport={async (postId, reason) => {
+                                                    // You can add this logic to your usePosts hook later, 
+                                                    // but this satisfies the function requirement for now.
+                                                    console.log(`Reporting post ${postId} for ${reason}`);
+                                                    return { success: true };
+                                                }}
+                                                onDelete={(postId) => {
+                                                    // Call your delete logic here
+                                                    console.log(`Deleting post ${postId}`);
+                                                }}
                                             />
                                         </motion.div>
                                     ))}
@@ -236,7 +274,48 @@ export default function CommunityPage() {
                                 <History size={16} className="text-green-500" />
                                 <span>Recent Activity</span>
                             </div>
-                            <p className="text-[10px] text-gray-500 text-center py-4">No recent activity</p>
+                            <div className="space-y-3">
+
+                                {recentPosts.length === 0 ? (
+
+                                    <p className="text-[11px] text-gray-400 text-center py-4">
+                                        No recent posts yet
+                                    </p>
+
+                                ) : (
+
+                                    recentPosts.map((post, i) => (
+
+                                        <div
+
+                                            key={post._id}
+
+                                            onClick={() =>
+                                                navigate(`/post/${post._id}`)
+                                            }
+
+                                            className="cursor-pointer group"
+                                        >
+
+                                            <p className="text-[12px] font-semibold text-gray-700 dark:text-gray-300 group-hover:text-blue-500 line-clamp-2">
+
+                                                {post.title}
+
+                                            </p>
+
+                                            <p className="text-[10px] text-gray-400">
+
+                                                {post.postType}
+
+                                            </p>
+
+                                        </div>
+
+                                    ))
+
+                                )}
+
+                            </div>
                         </div>
 
                         <div className="bg-white dark:bg-[#0A0C14] border border-gray-200 dark:border-white/5 rounded-[2rem] p-6 shadow-sm">

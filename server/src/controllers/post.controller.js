@@ -39,13 +39,24 @@ export const createPost = async (req, res) => {
 };
 
 /**
- * GET ALL POSTS: Handles Search, Type Filtering, and Sorting
+ * GET ALL POSTS: Handles Search, Type Filtering, Sorting, and Reported Post Filtering
  */
 export const getAllPosts = async (req, res) => {
     try {
-        const { page = 1, limit = 10, search, types, sort } = req.query;
+        const { search, types, sort } = req.query;
         let query = {};
 
+        // 1. Safe ID Check: Only filter if user exists
+        if (req.user && req.user.id) {
+            try {
+                // Use the $ne filter to hide reported posts
+                query["reports.user"] = { $ne: new mongoose.Types.ObjectId(req.user.id) };
+            } catch (idError) {
+                console.error("Invalid User ID format in token");
+            }
+        }
+
+        // 2. Search Logic (regex)
         if (search) {
             query.$or = [
                 { title: { $regex: search, $options: "i" } },
@@ -53,27 +64,28 @@ export const getAllPosts = async (req, res) => {
             ];
         }
 
+        // 3. Category/Type Filtering
         if (types) {
             const typeArray = types.split(',');
             query.postType = { $in: typeArray };
         }
 
+        // 4. Sorting
         let sortOption = { createdAt: -1 };
         if (sort === 'Most Upvoted') sortOption = { hp: -1 };
         if (sort === 'Most Commented') sortOption = { commentsCount: -1 };
 
         const posts = await Post.find(query)
             .populate("author", "username avatar avatarSeed")
-            .sort(sortOption)
-            .skip((Number(page) - 1) * Number(limit))
-            .limit(Number(limit));
+            .sort(sortOption);
 
         res.json(posts);
     } catch (error) {
-        res.status(500).json({ message: "Failed to fetch posts" });
+        // This is where your 500 error was caught
+        console.error("Fetch Feed Error:", error);
+        res.status(500).json({ message: "Failed to fetch posts", error: error.message });
     }
 };
-
 /**
  * VOTE POST (Combined Up/Down Logic)
  */

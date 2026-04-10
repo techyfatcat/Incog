@@ -39,3 +39,16 @@ export const protect = async (req, res, next) => {
         });
     }
 };
+
+export const optionalProtect = (req, res, next) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (token) {
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            req.user = { id: decoded.id };
+        } catch (error) {
+            // Token invalid, treat as guest
+        }
+    }
+    next();
+};

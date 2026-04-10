@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
     Layout, BookOpen, Building2, FileText,
-    Map, Globe, Code2, Database, TrendingUp
+    Map, Globe, Code2, Database, TrendingUp, Briefcase
 } from 'lucide-react';
 
 // Resume Components
@@ -14,7 +14,7 @@ import SalaryLab from '../components/PreparationOS/Tools/SalaryLab';
 import ToolLayout from "../components/PreparationOS/UI/ToolLayout";
 // UI Components
 import { ToolCard, SubjectCard } from '../components/PreparationOS/UI/Cards';
-
+import InternshipGrid from '../components/PreparationOS/Internships/InternshipGrid';
 // Company Intelligence Components
 import CompanyGrid from '../components/PreparationOS/Companies/CompanyGrid';
 import CompanyDetails from '../components/PreparationOS/Companies/CompanyDetails';
@@ -49,6 +49,23 @@ export default function ResourcesPage() {
         return (
             <ToolLayout>
                 <SalaryLab onBack={() => setView('hub')} />
+            </ToolLayout>
+        );
+    }
+
+    if (view === 'internships') {
+        return (
+            <ToolLayout>
+                {/* Added onBack so users can return to the main hub */}
+                <div className="pt-10">
+                    <button
+                        onClick={() => setView('hub')}
+                        className="mb-6 ml-6 px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 transition-all text-sm font-medium"
+                    >
+                        ← Back to Hub
+                    </button>
+                    <InternshipGrid />
+                </div>
             </ToolLayout>
         );
     }
@@ -133,6 +150,14 @@ export default function ResourcesPage() {
                                 title="OA Simulator"
                                 desc="Practice real company-style timed coding tests."
                                 onClick={() => setView('oa-simulator')} // This triggers the view switch
+                                active
+                            />
+
+                            <ToolCard
+                                icon={<Briefcase size={28} className="text-blue-500" />}
+                                title="Internship Hub"
+                                desc="Real-time aggregates from top tech companies and startups."
+                                onClick={() => setView('internships')}
                                 active
                             />
                         </div>

@@ -17,7 +17,40 @@ const PostCard = ({ post, searchQuery, onVote, onDelete, onReport }) => {
 
     const reportReasons = ["Spam", "Harassment", "Inappropriate", "Misinformation"];
 
-    const goToPost = () => navigate(`/post/${post._id}`);
+    const goToPost = () => {
+
+        const existing =
+            JSON.parse(
+                localStorage.getItem("recentPosts")
+            ) || [];
+
+        const newPost = {
+            _id: post._id,
+            title: post.title,
+            postType: post.postType
+        };
+
+        const updated = [
+
+            newPost,
+
+            ...existing.filter(
+                p => p._id !== post._id
+            )
+
+        ].slice(0, 5);
+
+        localStorage.setItem(
+
+            "recentPosts",
+
+            JSON.stringify(updated)
+
+        );
+
+        navigate(`/post/${post._id}`);
+
+    };
 
     const handleHp = async (e, type) => {
         e.stopPropagation();

@@ -13,6 +13,7 @@ import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import SmoothScroll from "./components/SmoothScroll";
 import ProtectedRoute from "./components/ProtectedRoutes";
+import InternshipPage from "./components/PreparationOS/Internships/InternshipGrid";
 
 // Helper component to handle conditional Navbar rendering
 function Navigation() {
@@ -57,6 +58,7 @@ export default function App() {
               <Route path="/about" element={<About />} />
               <Route path="/resources" element={<Resources />} />
               <Route path="/feed" element={<CommunityPage />} />
+
 
               {/* 🔒 Protected Routes */}
               <Route element={<ProtectedRoute />}>

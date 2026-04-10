@@ -12,11 +12,11 @@ import {
     getUserComments,
     reportPost
 } from '../controllers/post.controller.js';
-import { protect } from '../middleware/auth.middleware.js';
+import { protect, optionalProtect } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
-router.get('/', getAllPosts);
+router.get('/', optionalProtect, getAllPosts);
 router.get('/user/:userId', getPostsByUser);
 
 router.post('/create', protect, createPost);
