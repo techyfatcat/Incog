@@ -79,6 +79,7 @@ export default function Navbar() {
     const navLinks = [
         { name: "Home", path: "/" },
         { name: "Community", path: "/feed" },
+        { name: "Groups", path: "/groups" }, // 🔥 ADD THIS
         { name: "Resources", path: "/resources" },
         { name: "About", path: "/about" },
     ];

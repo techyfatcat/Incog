@@ -7,6 +7,8 @@ import avatarRoutes from "./routes/avatar.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import postRoutes from "./routes/post.routes.js";
 import profileRoutes from "./routes/profile.routes.js";
+import internshipRoutes from "./routes/internship.routes.js";
+import groupRoutes from "./routes/group.routes.js";
 
 const app = express();
 
@@ -57,14 +59,26 @@ const otpLimiter = rateLimit({
     }
 });
 
-/* --- APPLY LIMITERS (Order Matters!) --- */
-// 1. Specific, strict limits first
+const internshipLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 50, // Stricter limit to save API credits
+    handler: (req, res) => {
+        res.status(429).json({ success: false, message: "Internship search limit reached." });
+    }
+});
+
+/* --- APPLY LIMITERS (Order Matters!) */
+
+// strict limits first
 app.use("/api/auth/send-otp", otpLimiter);
 
-// 2. High-traffic asset limits second
+// internship limiter before general limiter
+app.use("/api/internships", internshipLimiter);
+
+// high-traffic assets
 app.use("/api/avatar", avatarLimiter);
 
-// 3. General API limits last
+// general limiter last
 app.use("/api", generalLimiter);
 /* Health check */
 app.get("/", (req, res) => {
@@ -73,10 +87,12 @@ app.get("/", (req, res) => {
 
 /* --- ROUTES --- */
 // Standardized all routes to start with /api
+app.use("/api/internships", internshipRoutes);
 app.use("/api/avatar", avatarRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/groups", groupRoutes);
 
 /* 404 Handler */
 app.use((req, res) => {

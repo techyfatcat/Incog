@@ -1,59 +1,98 @@
-import { useState, useEffect, useCallback } from 'react';
-import { getAllPosts, votePost, reportPost as reportPostService } from '../services/postsService';
+import { useState, useEffect, useCallback } from "react";
+import { getAllPosts, votePost, reportPost as reportPostService } from "../services/postsService";
 
 export const usePosts = (searchQuery, activeFilters) => {
     const [posts, setPosts] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+
     const [debouncedQuery, setDebouncedQuery] = useState("");
 
-    // 1. Debounce Search Query to prevent excessive API calls
+    // 🔥 Debounce search
     useEffect(() => {
-        const timer = setTimeout(() => setDebouncedQuery(searchQuery), 300);
+        const timer = setTimeout(() => setDebouncedQuery(searchQuery), 400);
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    // 2. Fetch Data from Backend
+    // 🔥 Reset when filters/search change
+    useEffect(() => {
+        setPosts([]);
+        setPage(1);
+        setHasMore(true);
+    }, [
+        debouncedQuery,
+        activeFilters?.sort,
+        JSON.stringify(activeFilters?.types || [])
+    ]);
+
+    // 🔥 Fetch posts (pagination)
     const fetchPosts = useCallback(async () => {
+        if (loading || !hasMore) return;
+
         setLoading(true);
+
         try {
-            const params = {};
+            const params = {
+                page,
+                limit: 10,
+            };
 
-            if (debouncedQuery) {
-                params.search = debouncedQuery;
-            }
-
-            if (activeFilters?.types?.length) {
-                params.types = activeFilters.types.join(',');
-            }
-
-            if (activeFilters?.sort) {
-                params.sort = activeFilters.sort;
-            }
+            if (debouncedQuery) params.search = debouncedQuery;
+            if (activeFilters?.types?.length)
+                params.types = activeFilters.types.join(",");
+            if (activeFilters?.sort) params.sort = activeFilters.sort;
 
             const data = await getAllPosts(params);
-            // Ensure we handle both {posts: []} and [] formats
-            setPosts(Array.isArray(data) ? data : data.posts || []);
+
+            const newPosts = Array.isArray(data) ? data : data.posts || [];
+
+            setPosts((prev) => {
+                // 🔥 prevent duplicates
+                const existingIds = new Set(prev.map(p => p._id));
+                const filtered = newPosts.filter(p => !existingIds.has(p._id));
+                return [...prev, ...filtered];
+            });
+
+            // 🔥 stop if no more data
+            if (newPosts.length < 10) {
+                setHasMore(false);
+            }
+
         } catch (error) {
             console.error("Feed error:", error);
-            setPosts([]);
         } finally {
             setLoading(false);
         }
-    }, [debouncedQuery, activeFilters]);
+    }, [
+        page,
+        debouncedQuery,
+        activeFilters?.sort,
+        JSON.stringify(activeFilters?.types || []),
+        hasMore,
+        loading
+    ]);
 
+    // 🔥 Trigger fetch
     useEffect(() => {
         fetchPosts();
     }, [fetchPosts]);
 
-    // 🚀 Optimistic Vote Handler
+    // 🔥 Load more (infinite scroll trigger)
+    const loadMore = () => {
+        if (!loading && hasMore) {
+            setPage((prev) => prev + 1);
+        }
+    };
+
+    // 🚀 Optimistic Vote
     const handleVote = useCallback(async (postId, voteType) => {
         const originalPosts = [...posts];
 
-        // Update UI immediately (Optimistic UI)
-        setPosts(prevPosts =>
-            prevPosts.map(post => {
+        setPosts(prev =>
+            prev.map(post => {
                 if (post._id === postId) {
-                    const change = voteType === 'up' ? 1 : -1;
+                    const change = voteType === "up" ? 1 : -1;
                     return { ...post, hp: (post.hp || 0) + change };
                 }
                 return post;
@@ -63,33 +102,35 @@ export const usePosts = (searchQuery, activeFilters) => {
         try {
             await votePost(postId, voteType);
         } catch (error) {
-            console.error("Vote failed, rolling back:", error);
+            console.error("Vote failed:", error);
             setPosts(originalPosts);
         }
     }, [posts]);
 
-    // 🚩 Report Post Handler
+    // 🚩 Report
     const handleReport = useCallback(async (postId, reason) => {
         try {
-            await reportPostService(postId, reason); // Pass reason to your service
+            await reportPostService(postId, reason);
 
-            // 🚀 THE HIDE LOGIC: Remove it from the local posts array immediately
             setTimeout(() => {
-                setPosts(prev => prev.filter(post => post._id !== postId));
-            }, 1600); // Matches the UI success message duration
+                setPosts(prev => prev.filter(p => p._id !== postId));
+            }, 1200);
 
             return { success: true };
         } catch (error) {
-            return { success: false, error: error.response?.data?.message || "Failed to report" };
+            return {
+                success: false,
+                error: error.response?.data?.message || "Failed"
+            };
         }
     }, []);
 
     return {
         posts,
         loading,
-        debouncedQuery,
+        hasMore,
+        loadMore,
         handleVote,
-        handleReport, // New capability
-        refreshFeed: fetchPosts
+        handleReport,
     };
 };

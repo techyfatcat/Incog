@@ -14,19 +14,35 @@ import NotFound from "./pages/NotFound";
 import SmoothScroll from "./components/SmoothScroll";
 import ProtectedRoute from "./components/ProtectedRoutes";
 import InternshipPage from "./components/PreparationOS/Internships/InternshipGrid";
+import JoinGroup from "./pages/JoinGroup";
+
+// 🔥 NEW IMPORTS
+import Groups from "./pages/Groups";
+import Chat from "./pages/Chat";
 
 // Helper component to handle conditional Navbar rendering
 function Navigation() {
   const location = useLocation();
 
-  // Define all valid paths. 
-  // We use a regex check for dynamic routes like /post/123
-  const validPaths = ["/", "/auth", "/about", "/resources", "/feed", "/profile", "/settings"];
+  const validPaths = [
+    "/",
+    "/auth",
+    "/about",
+    "/resources",
+    "/feed",
+    "/profile",
+    "/settings",
+    "/groups", // ✅ ADD
+  ];
+
   const isDynamicPostPath = location.pathname.startsWith("/post/");
+  const isDynamicChatPath = location.pathname.startsWith("/chat/"); // ✅ ADD
 
-  const isKnownRoute = validPaths.includes(location.pathname) || isDynamicPostPath;
+  const isKnownRoute =
+    validPaths.includes(location.pathname) ||
+    isDynamicPostPath ||
+    isDynamicChatPath; // ✅ INCLUDE
 
-  // If the current path doesn't match any of our routes, hide the Navbar
   if (!isKnownRoute) return null;
 
   return <Navbar />;
@@ -46,7 +62,6 @@ export default function App() {
       <BrowserRouter>
         <ScrollToTop />
 
-        {/* Navigation is now a child of BrowserRouter so it can use useLocation */}
         <Navigation />
 
         <SmoothScroll>
@@ -59,15 +74,19 @@ export default function App() {
               <Route path="/resources" element={<Resources />} />
               <Route path="/feed" element={<CommunityPage />} />
 
-
               {/* 🔒 Protected Routes */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/post/:id" element={<PostDetail />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/settings" element={<SettingsPage />} />
+
+                {/* 🔥 NEW GROUP FEATURE */}
+                <Route path="/groups" element={<Groups />} />
+                <Route path="/chat/:groupId" element={<Chat />} />
+                <Route path="/join/:code" element={<JoinGroup />} />
               </Route>
 
-              {/* 🚀 404 Fallback - This will now trigger Navigation to return null */}
+              {/* 🚀 404 */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

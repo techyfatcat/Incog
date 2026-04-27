@@ -1,26 +1,54 @@
-import { useState, useEffect } from 'react';
-import { fetchInternships } from '../services/internshipService';
+import { useEffect, useState }
+    from "react";
 
-export const useInternships = (initialQuery = 'Software Engineering Intern') => {
-    const [internships, setInternships] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+import {
+    fetchInternships
+}
+    from "../services/internshipService";
 
-    const getInternships = async (query) => {
-        setLoading(true);
-        try {
-            const data = await fetchInternships({ query });
-            setInternships(data);
-            setLoading(false);
-        } catch (err) {
-            setError("Failed to load internships. Please try again later.");
-            setLoading(false);
-        }
-    };
+export default function useInternships() {
+
+    const [internships, setInternships] =
+        useState([]);
+
+    const [loading, setLoading] =
+        useState(true);
+
+    const [error, setError] =
+        useState(null);
+
 
     useEffect(() => {
-        getInternships(initialQuery);
+
+        fetchInternships()
+
+            .then(data => {
+
+                setInternships(data);
+
+                setLoading(false);
+
+            })
+
+            .catch(err => {
+
+                console.error(err);
+
+                setError(err);
+
+                setLoading(false);
+
+            });
+
     }, []);
 
-    return { internships, loading, error, refresh: getInternships };
-};
+
+    return {
+
+        internships,
+        loading,
+        error
+
+    };
+
+}

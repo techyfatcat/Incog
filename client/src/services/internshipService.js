@@ -1,15 +1,17 @@
-import api from '../utils/api';
+const API =
+    "http://localhost:5000/api/internships";
 
-/**
- * Fetches internship listings based on search parameters
- * @param {Object} params - { query: string, location: string, remote: boolean }
- */
-export const fetchInternships = async (params) => {
-    try {
-        const response = await api.get('/internships', { params });
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching internships:", error);
-        throw error;
-    }
-};
+export const fetchInternships =
+    async () => {
+
+        const res =
+            await fetch(API);
+
+        if (!res.ok)
+            throw new Error(
+                "Failed fetching internships"
+            );
+
+        return res.json();
+
+    };
