@@ -13,7 +13,6 @@ export default function CommunityPage() {
     const navigate = useNavigate();
     const location = useLocation();
     const [recentPosts, setRecentPosts] = useState([]);
-    // 🛡️ AUTH STATE: Relying on 'token' to stay in sync with ProtectedRoute
     const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -21,40 +20,20 @@ export default function CommunityPage() {
         const syncAuth = () => {
             setIsLoggedIn(!!localStorage.getItem("token"));
         };
-        // Listen for storage changes (like login/logout in other tabs)
         window.addEventListener('storage', syncAuth);
         return () => window.removeEventListener('storage', syncAuth);
     }, []);
 
     useEffect(() => {
-
         const loadRecent = () => {
-
-            const stored =
-                JSON.parse(
-                    localStorage.getItem("recentPosts")
-                ) || [];
-
+            const stored = JSON.parse(localStorage.getItem("recentPosts")) || [];
             setRecentPosts(stored);
-
         };
-
         loadRecent();
-
-        window.addEventListener(
-            "storage",
-            loadRecent
-        );
-
-        return () =>
-            window.removeEventListener(
-                "storage",
-                loadRecent
-            );
-
+        window.addEventListener("storage", loadRecent);
+        return () => window.removeEventListener("storage", loadRecent);
     }, []);
 
-    // 📝 FILTER CONFIG
     const postTypes = [
         'Interview Experience', 'OA Experience', 'Final Offer Story',
         'Rejection Experience', 'Salary Reveal', 'Market Trend',
@@ -66,35 +45,22 @@ export default function CommunityPage() {
     const [sortBy, setSortBy] = useState('Newest');
     const [appliedFilters, setAppliedFilters] = useState({ types: postTypes, sort: 'Newest' });
 
-    // 🚀 THE ENGINE
     const { posts, loading, handleVote, refreshFeed } = usePosts(searchQuery, appliedFilters);
 
     const handleApplyFilters = () => {
-
-        if (selectedTypes.length === 0) {
-            setAppliedFilters({
-                types: [],
-                sort: sortBy
-            });
-        } else {
-            setAppliedFilters({
-                types: selectedTypes,
-                sort: sortBy
-            });
-        }
-
+        setAppliedFilters({
+            types: selectedTypes.length === 0 ? [] : selectedTypes,
+            sort: sortBy
+        });
     };
 
     const resetFilters = () => {
         setSelectedTypes(postTypes);
         setSortBy('Newest');
-        setAppliedFilters({
-            types: postTypes,
-            sort: 'Newest'
-        });
+        setAppliedFilters({ types: postTypes, sort: 'Newest' });
     };
+
     const handleCreatePostClick = () => {
-        // Double-check token before opening
         const token = localStorage.getItem("token");
         if (!token) {
             navigate('/auth', { state: { from: location.pathname } });
@@ -110,9 +76,7 @@ export default function CommunityPage() {
 
                     {/* 🛠️ LEFT SIDEBAR: FILTERS */}
                     <aside className="hidden lg:block lg:col-span-3 sticky top-10 px-2">
-                        <div className="bg-white dark:bg-[#0A0C14] rounded-[24px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 dark:border-white/[0.05]">
-
-                            {/* HEADER: Minimal & Clean */}
+                        <div className="bg-white dark:bg-[#121624] rounded-[24px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 dark:border-white/[0.08] transition-colors duration-300">
                             <div className="flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-2">
                                     <SlidersHorizontal size={16} className="text-blue-500" />
@@ -128,7 +92,6 @@ export default function CommunityPage() {
                                 </button>
                             </div>
 
-                            {/* CATEGORY SECTION */}
                             <div className="mb-6">
                                 <p className="text-[12px] font-bold text-gray-400 dark:text-gray-500 mb-3 font-sans uppercase tracking-tight">
                                     Category
@@ -147,12 +110,12 @@ export default function CommunityPage() {
                                                     )
                                                 }
                                                 className={`
-                            px-3 py-1.5 rounded-full text-[11px] font-medium transition-all border font-sans
-                            ${active
-                                                        ? 'bg-[#F0F7FF] dark:bg-blue-500/10 border-blue-500 text-blue-600 dark:text-blue-400'
-                                                        : 'bg-white dark:bg-transparent border-gray-100 dark:border-white/10 text-gray-500 hover:border-gray-300'
+                                                    px-3 py-1.5 rounded-full text-[11px] font-medium transition-all border font-sans
+                                                    ${active
+                                                        ? 'bg-[#F0F7FF] dark:bg-blue-500/20 border-blue-500 text-blue-600 dark:text-blue-400'
+                                                        : 'bg-white dark:bg-white/5 border-gray-100 dark:border-white/10 text-gray-500 hover:border-gray-300 dark:hover:border-white/20'
                                                     }
-                        `}
+                                                `}
                                             >
                                                 {type}
                                             </button>
@@ -161,7 +124,6 @@ export default function CommunityPage() {
                                 </div>
                             </div>
 
-                            {/* SORT SECTION: Clean Radio List */}
                             <div className="mb-8">
                                 <p className="text-[12px] font-bold text-gray-400 dark:text-gray-500 mb-3 font-sans uppercase tracking-tight">
                                     Sort By
@@ -174,17 +136,17 @@ export default function CommunityPage() {
                                                 key={opt}
                                                 onClick={() => setSortBy(opt)}
                                                 className={`
-                            flex items-center gap-3 px-3 py-2 rounded-xl text-[12px] font-medium transition-all font-sans
-                            ${active
-                                                        ? 'text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-500/5'
+                                                    flex items-center gap-3 px-3 py-2 rounded-xl text-[12px] font-medium transition-all font-sans
+                                                    ${active
+                                                        ? 'text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-500/10'
                                                         : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
                                                     }
-                        `}
+                                                `}
                                             >
                                                 <div className={`
-                            w-4 h-4 rounded-full border flex items-center justify-center transition-all shrink-0
-                            ${active ? 'bg-blue-500 border-blue-500' : 'border-gray-300 dark:border-white/20'}
-                        `}>
+                                                    w-4 h-4 rounded-full border flex items-center justify-center transition-all shrink-0
+                                                    ${active ? 'bg-blue-500 border-blue-500' : 'border-gray-300 dark:border-white/20'}
+                                                `}>
                                                     {active && <Check size={10} className="text-white" strokeWidth={4} />}
                                                 </div>
                                                 {opt}
@@ -194,7 +156,6 @@ export default function CommunityPage() {
                                 </div>
                             </div>
 
-                            {/* COMPACT APPLY BUTTON */}
                             <button
                                 onClick={handleApplyFilters}
                                 className="w-full py-3.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-[13px] font-bold font-sans transition-all shadow-md shadow-blue-500/10 active:scale-[0.98]"
@@ -216,7 +177,7 @@ export default function CommunityPage() {
                                         placeholder="Search discussions..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full bg-white dark:bg-[#0A0C14] border border-gray-200 dark:border-white/5 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-blue-500 transition-all text-sm dark:text-white shadow-sm"
+                                        className="w-full bg-white dark:bg-[#121624] border border-gray-200 dark:border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-blue-500 transition-all text-sm dark:text-white shadow-sm"
                                     />
                                 </div>
                                 <button
@@ -250,15 +211,10 @@ export default function CommunityPage() {
                                                 searchQuery={searchQuery}
                                                 onVote={(postId, type) => handleVote(postId, type)}
                                                 onReport={async (postId, reason) => {
-                                                    // You can add this logic to your usePosts hook later, 
-                                                    // but this satisfies the function requirement for now.
                                                     console.log(`Reporting post ${postId} for ${reason}`);
                                                     return { success: true };
                                                 }}
-                                                onDelete={(postId) => {
-                                                    // Call your delete logic here
-                                                    console.log(`Deleting post ${postId}`);
-                                                }}
+                                                onDelete={(postId) => console.log(`Deleting post ${postId}`)}
                                             />
                                         </motion.div>
                                     ))}
@@ -267,58 +223,34 @@ export default function CommunityPage() {
                         </div>
                     </main>
 
-                    {/* 🚀 RIGHT SIDEBAR: TRENDS */}
+                    {/* 🚀 RIGHT SIDEBAR: TRENDS & ACTIVITY */}
                     <aside className="hidden lg:block lg:col-span-3 space-y-6 sticky top-10">
-                        <div className="bg-white dark:bg-[#0A0C14] border border-gray-200 dark:border-white/5 rounded-[2rem] p-6 shadow-sm">
+                        <div className="bg-white dark:bg-[#121624] border border-gray-200 dark:border-white/10 rounded-[2rem] p-6 shadow-sm transition-colors duration-300">
                             <div className="flex items-center gap-2 text-gray-900 dark:text-white font-bold text-sm mb-4">
                                 <History size={16} className="text-green-500" />
                                 <span>Recent Activity</span>
                             </div>
                             <div className="space-y-3">
-
                                 {recentPosts.length === 0 ? (
-
-                                    <p className="text-[11px] text-gray-400 text-center py-4">
-                                        No recent posts yet
-                                    </p>
-
+                                    <p className="text-[11px] text-gray-400 text-center py-4">No recent posts yet</p>
                                 ) : (
-
-                                    recentPosts.map((post, i) => (
-
+                                    recentPosts.map((post) => (
                                         <div
-
                                             key={post._id}
-
-                                            onClick={() =>
-                                                navigate(`/post/${post._id}`)
-                                            }
-
+                                            onClick={() => navigate(`/post/${post._id}`)}
                                             className="cursor-pointer group"
                                         >
-
-                                            <p className="text-[12px] font-semibold text-gray-700 dark:text-gray-300 group-hover:text-blue-500 line-clamp-2">
-
+                                            <p className="text-[12px] font-semibold text-gray-700 dark:text-gray-300 group-hover:text-blue-500 line-clamp-2 transition-colors">
                                                 {post.title}
-
                                             </p>
-
-                                            <p className="text-[10px] text-gray-400">
-
-                                                {post.postType}
-
-                                            </p>
-
+                                            <p className="text-[10px] text-gray-400">{post.postType}</p>
                                         </div>
-
                                     ))
-
                                 )}
-
                             </div>
                         </div>
 
-                        <div className="bg-white dark:bg-[#0A0C14] border border-gray-200 dark:border-white/5 rounded-[2rem] p-6 shadow-sm">
+                        <div className="bg-white dark:bg-[#121624] border border-gray-200 dark:border-white/10 rounded-[2rem] p-6 shadow-sm transition-colors duration-300">
                             <div className="flex items-center gap-2 mb-5 text-gray-900 dark:text-white font-bold text-sm">
                                 <Flame size={18} className="text-orange-500" />
                                 <span>Trending Now</span>
@@ -339,13 +271,12 @@ export default function CommunityPage() {
                 </div>
             </div>
 
-            {/* THE MODAL COMPONENT */}
             <CreatePostModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onPostCreated={() => {
-                    refreshFeed(); // Trigger re-fetch of posts
-                    setIsModalOpen(false); // Close modal
+                    refreshFeed();
+                    setIsModalOpen(false);
                 }}
             />
         </div>

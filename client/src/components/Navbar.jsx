@@ -4,6 +4,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
 import IncogLogo from "../assets/incog_logo.png";
+import logoDark from "../assets/logo/logo-dark.svg";
+import logoLight from "../assets/logo/logo-light.svg";
 
 export default function Navbar() {
     const { theme, setTheme } = useTheme();
@@ -102,19 +104,14 @@ export default function Navbar() {
             >
                 {/* --- LEFT: LOGO --- */}
                 <div className="flex-1 basis-0 flex justify-start">
-                    <Link to="/" className="flex items-center group ml-2">
-                        <motion.div className="flex items-center">
-                            <motion.img
-                                src={IncogLogo}
-                                alt="Incog Logo"
-                                animate={{ scale: scrolled ? 0.85 : 1 }}
-                                whileHover={{ scale: 1.1, rotate: -3 }}
-                                className="h-9 w-auto object-contain -mr-1"
-                            />
-                            <motion.span className="text-lg font-bold tracking-tighter text-slate-900 dark:text-white">
-                                Incog
-                            </motion.span>
-                        </motion.div>
+                    <Link to="/" className="flex items-center ml-2">
+                        <motion.img
+                            src={theme === "dark" ? logoDark : logoLight}
+                            alt="Incog"
+                            animate={{ scale: scrolled ? 0.9 : 1 }}
+                            whileHover={{ scale: 1.05 }}
+                            className="h-8 w-auto object-contain"
+                        />
                     </Link>
                 </div>
 

@@ -1,166 +1,155 @@
 import { useEffect, useState } from "react";
 import { createGroup, getGroups, joinGroup } from "../services/groupService";
 import { useNavigate } from "react-router-dom";
-import { Plus, Users, Link as LinkIcon } from "lucide-react";
+import { Plus, Users, Search, Link as LinkIcon, Check } from "lucide-react";
 
 const Groups = () => {
     const [groups, setGroups] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [groupName, setGroupName] = useState("");
-    const [inviteCode, setInviteCode] = useState("");
-
+    const [copiedId, setCopiedId] = useState(null);
+    const [query, setQuery] = useState("");
     const navigate = useNavigate();
 
     const fetchGroups = async () => {
         try {
             const res = await getGroups();
             setGroups(res.data);
-        } catch (err) {
-            console.error(err);
-        }
+        } catch (err) { console.error(err); }
     };
 
-    useEffect(() => {
-        fetchGroups();
-    }, []);
+    useEffect(() => { fetchGroups(); }, []);
 
     const handleCreate = async () => {
         if (!groupName.trim()) return;
-
         try {
             await createGroup({ name: groupName });
             setGroupName("");
             setShowModal(false);
             fetchGroups();
-        } catch (err) {
-            console.error(err);
-        }
+        } catch (err) { console.error(err); }
     };
 
-    const handleJoin = async () => {
-        if (!inviteCode.trim()) return;
-
-        try {
-            const res = await joinGroup(inviteCode);
-            navigate(`/chat/${res.data._id}`);
-        } catch (err) {
-            console.error(err);
-        }
+    const handleCopy = (e, groupId) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(`${window.location.origin}/join/${groupId}`);
+        setCopiedId(groupId);
+        setTimeout(() => setCopiedId(null), 2000);
     };
 
-    const copyInviteLink = (code) => {
-        const link = `${window.location.origin}/join/${code}`;
-        navigator.clipboard.writeText(link);
-        alert("Invite link copied!");
-    };
+    const filtered = groups.filter(g =>
+        g.name.toLowerCase().includes(query.toLowerCase())
+    );
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#0f0f0f] to-[#1a1a1a] text-white p-6">
+        <div className="min-h-screen bg-[#e5e5e5] dark:bg-[#080B16] pt-24 pb-10 transition-colors duration-500">
+            <div className="max-w-4xl mx-auto px-4">
 
-            {/* HEADER */}
-            <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold tracking-tight">Your Groups</h1>
-
-                <button
-                    onClick={() => setShowModal(true)}
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl transition"
-                >
-                    <Plus size={18} />
-                    Create
-                </button>
-            </div>
-
-            {/* JOIN SECTION */}
-            <div className="mb-8 flex gap-3 max-w-md">
-                <input
-                    type="text"
-                    placeholder="Enter invite code..."
-                    value={inviteCode}
-                    onChange={(e) => setInviteCode(e.target.value)}
-                    className="flex-1 px-4 py-2 rounded-xl bg-[#1f1f1f] border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <button
-                    onClick={handleJoin}
-                    className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-xl"
-                >
-                    Join
-                </button>
-            </div>
-
-            {/* GROUP GRID */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {groups.map((group) => (
-                    <div
-                        key={group._id}
-                        className="p-5 rounded-2xl bg-[#1c1c1c] border border-gray-800 hover:border-blue-500 transition group"
+                {/* TOP BAR */}
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="relative flex-1">
+                        <Search
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"
+                            size={15}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Search groups…"
+                            value={query}
+                            onChange={e => setQuery(e.target.value)}
+                            className="w-full bg-white dark:bg-[#0A0C14] border border-gray-200 dark:border-white/[0.06] rounded-xl py-2.5 pl-9 pr-4 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 outline-none focus:border-blue-500 transition-colors"
+                        />
+                    </div>
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 active:scale-95 text-white text-sm font-semibold rounded-xl transition-all shadow-lg shadow-blue-500/20 whitespace-nowrap"
                     >
-                        {/* CLICKABLE AREA */}
+                        <Plus size={16} />
+                        New Group
+                    </button>
+                </div>
+
+                {/* GROUP LIST */}
+                <div className="flex flex-col gap-2">
+                    {filtered.length === 0 && (
+                        <div className="text-center py-16 text-gray-400 dark:text-gray-600 text-sm">
+                            No groups found
+                        </div>
+                    )}
+                    {filtered.map(group => (
                         <div
+                            key={group._id}
                             onClick={() => navigate(`/chat/${group._id}`)}
-                            className="cursor-pointer"
+                            className="group flex items-center gap-4 px-5 py-4 bg-white dark:bg-[#0A0C14] border border-gray-100 dark:border-white/[0.05] hover:border-blue-500/40 dark:hover:border-blue-500/30 rounded-2xl cursor-pointer transition-all"
                         >
-                            <div className="flex items-center justify-between mb-4">
-                                <Users className="text-blue-400" />
-                                <span className="text-xs text-gray-400">
-                                    {group.members.length} members
-                                </span>
+                            {/* Icon */}
+                            <div className="w-11 h-11 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                                <Users size={20} className="text-blue-500" />
                             </div>
 
-                            <h2 className="text-lg font-semibold mb-2 group-hover:text-blue-400 transition">
-                                {group.name}
-                            </h2>
-                        </div>
+                            {/* Info */}
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-blue-500 transition-colors truncate">
+                                    {group.name}
+                                </p>
+                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                                    {group.members?.length || 0} members
+                                </p>
+                            </div>
 
-                        {/* INVITE SECTION */}
-                        <div
-                            onClick={() => copyInviteLink(group.inviteCode)}
-                            className="flex items-center gap-2 text-gray-400 text-sm cursor-pointer hover:text-blue-400 mt-2"
-                        >
-                            <LinkIcon size={14} />
-                            Copy Invite Link
+                            {/* Copy link button */}
+                            <button
+                                onClick={e => handleCopy(e, group._id)}
+                                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all flex-shrink-0
+                                    ${copiedId === group._id
+                                        ? "bg-green-500/10 border-green-500/30 text-green-500"
+                                        : "bg-gray-100 dark:bg-white/[0.04] border-gray-200 dark:border-white/[0.06] text-gray-500 dark:text-gray-400 hover:border-blue-500/40 hover:text-blue-500"
+                                    }`}
+                            >
+                                {copiedId === group._id
+                                    ? <><Check size={13} /> Copied!</>
+                                    : <><LinkIcon size={13} /> Copy link</>
+                                }
+                            </button>
                         </div>
-                    </div>
-                ))}
-            </div>
-
-            {/* EMPTY STATE */}
-            {groups.length === 0 && (
-                <div className="text-center mt-20 text-gray-500">
-                    No groups yet. Create or join one 🚀
+                    ))}
                 </div>
-            )}
+            </div>
 
             {/* CREATE MODAL */}
             {showModal && (
-                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-                    <div className="bg-[#1c1c1c] p-6 rounded-2xl w-full max-w-md border border-gray-700">
-
-                        <h2 className="text-xl font-semibold mb-4">Create Group</h2>
-
+                <div
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+                    onClick={e => { if (e.target === e.currentTarget) setShowModal(false); }}
+                >
+                    <div className="bg-white dark:bg-[#0A0C14] w-full max-w-sm rounded-[28px] p-7 border border-gray-100 dark:border-white/[0.07] shadow-2xl">
+                        <h2 className="text-lg font-black text-gray-900 dark:text-white mb-1">Create a group</h2>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mb-5">
+                            Members can join via an invite link.
+                        </p>
                         <input
                             type="text"
-                            placeholder="Group name..."
+                            placeholder="e.g. Engineering squad"
                             value={groupName}
-                            onChange={(e) => setGroupName(e.target.value)}
-                            className="w-full px-4 py-2 rounded-xl bg-[#111] border border-gray-700 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            onChange={e => setGroupName(e.target.value)}
+                            onKeyDown={e => e.key === "Enter" && handleCreate()}
+                            autoFocus
+                            className="w-full bg-gray-100 dark:bg-white/[0.04] border border-gray-200 dark:border-white/[0.08] rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 outline-none focus:border-blue-500 transition-colors mb-5"
                         />
-
-                        <div className="flex justify-end gap-3">
-                            <button
-                                onClick={() => setShowModal(false)}
-                                className="px-4 py-2 rounded-xl bg-gray-700 hover:bg-gray-600"
-                            >
-                                Cancel
-                            </button>
-
+                        <div className="flex gap-3">
                             <button
                                 onClick={handleCreate}
-                                className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700"
+                                className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 active:scale-95 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-blue-500/20"
                             >
                                 Create
                             </button>
+                            <button
+                                onClick={() => setShowModal(false)}
+                                className="flex-1 py-3 bg-gray-100 dark:bg-white/[0.04] hover:bg-gray-200 dark:hover:bg-white/[0.07] text-gray-700 dark:text-gray-300 text-sm font-bold rounded-xl transition-all border border-gray-200 dark:border-white/[0.06]"
+                            >
+                                Cancel
+                            </button>
                         </div>
-
                     </div>
                 </div>
             )}
