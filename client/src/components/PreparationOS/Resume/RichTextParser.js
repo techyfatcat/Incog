@@ -1,18 +1,55 @@
-export const parseRichText = (text) => {
-    if (!text) return "";
+/**
+ * Parses a simple markdown-like rich text string into HTML.
+ * Supports:
+ *  - **bold**
+ *  - _italic_
+ *  - Bullet lines starting with "- "
+ *  - Double newlines become paragraph breaks
+ */
+export function parseRichText(text = '') {
+    if (!text) return '';
 
-    return text.split('\n').map(line => {
-        // Handle Bold: **text**
-        let processed = line.replace(/\*\*(.*?)\*\*/g, '<strong style="font-weight: 700;">$1</strong>');
+    // Escape HTML entities first
+    let html = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
 
-        // Handle Italic: _text_
-        processed = processed.replace(/_(.*?)_/g, '<em style="font-style: italic;">$1</em>');
+    // Bold: **text**
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 
-        // Handle Bullets: - text
-        if (processed.trim().startsWith('-')) {
-            return `<li style="margin-left: 15px; list-style-type: disc; margin-bottom: 4px;">${processed.replace('-', '').trim()}</li>`;
+    // Italic: _text_
+    html = html.replace(/_(.+?)_/g, '<em>$1</em>');
+
+    // Process line by line
+    const lines = html.split('\n');
+    const result = [];
+    let inList = false;
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const isBullet = line.trimStart().startsWith('- ');
+
+        if (isBullet) {
+            if (!inList) {
+                result.push('<ul style="margin:4px 0; padding-left:14px; list-style:disc;">');
+                inList = true;
+            }
+            result.push(`<li style="margin-bottom:2px;">${line.trimStart().slice(2)}</li>`);
+        } else {
+            if (inList) {
+                result.push('</ul>');
+                inList = false;
+            }
+            if (line.trim() === '') {
+                result.push('<div style="margin-bottom:6px;"></div>');
+            } else {
+                result.push(`<p style="margin:0 0 3px 0;">${line}</p>`);
+            }
         }
+    }
 
-        return `<p style="margin-bottom: 6px;">${processed}</p>`;
-    }).join('');
-};
+    if (inList) result.push('</ul>');
+
+    return result.join('');
+}
