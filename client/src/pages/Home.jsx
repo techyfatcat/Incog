@@ -15,6 +15,7 @@ import logoDark from '../assets/logo/logo-dark.svg';
 import logoLight from '../assets/logo/logo-light.svg';
 import AuroraBackground from "../components/AuroraBackground";
 import { useTheme } from "../context/ThemeContext";
+import { motion, useScroll, useTransform } from "framer-motion";
 
 
 // --- THREE.JS NETWORK BACKGROUND COMPONENT ---
@@ -112,7 +113,8 @@ export default function Home() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [activeCard, setActiveCard] = useState(0);
     const { theme } = useTheme();
-
+    const { scrollY } = useScroll();
+    const heroY = useTransform(scrollY, [0, 500], [0, -80]);
     const featureCards = [
         { icon: <Shield size={48} />, title: "Stay Anonymous", desc: "Your identity stays hidden. Focus on learning." },
         { icon: <Trophy size={48} />, title: "Earn Honor Points", desc: "Contribute insights and build your credibility." },
@@ -152,7 +154,13 @@ export default function Home() {
             <main className="relative z-10 max-w-7xl mx-auto px-6 pt-24 pb-24">
 
                 {/* --- HERO SECTION --- */}
-                <div className="flex flex-col lg:flex-row items-center justify-between gap-16 mb-32 min-h-[450px]">
+                <motion.div
+                    style={{ y: heroY }}
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
+                    className="flex flex-col lg:flex-row items-center justify-between gap-16 mb-32 min-h-[450px]"
+                >
                     <div className="max-w-2xl space-y-8 text-center lg:text-left">
                         <div className="space-y-6">
                             <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
@@ -218,7 +226,7 @@ export default function Home() {
                             ))}
                         </div>
                     </div>
-                </div>
+                </motion.div>
 
                 {/* --- PROBLEMS SECTION --- */}
                 <ProblemsSection />
@@ -238,7 +246,7 @@ export default function Home() {
                                 <img
                                     src={theme === "dark" ? logoDark : logoLight}
                                     alt="Incog Logo"
-                                    className="w-40 h-40 object-contain transition-all duration-500 ease-out group-hover:scale-110 group-hover:rotate-[10deg] filter drop-shadow-sm group-hover:drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]"
+                                    className="w-30 h-3s0 object-contain transition-all duration-500 ease-out group-hover:scale-110 group-hover:rotate-[10deg] filter drop-shadow-sm group-hover:drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]"
                                 />
 
                             </div>
@@ -317,7 +325,13 @@ function ProblemsSection() {
     const [ref, visible] = useScrollReveal(0.1);
 
     return (
-        <section ref={ref} className="mb-32">
+        <motion.section
+            ref={ref}
+            initial={{ opacity: 0, y: 40 }}
+            animate={visible ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7 }}
+            className="mb-32"
+        >
             {/* Header */}
             <section className="mb-32">
                 <h2 className="text-3xl font-bold mb-12 text-center">The Problem We Saw</h2>
@@ -378,7 +392,7 @@ function ProblemsSection() {
                     </button>
                 </div>
             </section>
-        </section>
+        </motion.section>
 
     );
 }

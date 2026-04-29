@@ -1,62 +1,45 @@
+// src/pages/Resources.jsx
+// Updated to include fully functional Subjects tab
+
 import React, { useState } from 'react';
 import {
     Layout, BookOpen, Building2, FileText,
     Map, Globe, Code2, Database, TrendingUp, Briefcase
 } from 'lucide-react';
 
-// Resume Components
+// Preparation OS components
 import ResumeBuilder from '../components/PreparationOS/ResumeBuilder';
 import OASimulator from '../components/PreparationOS/OASimulator/OASimulator';
-import TestInterface from '../components/PreparationOS/OASimulator/TestInterface';
-import TestResult from '../components/PreparationOS/OASimulator/TestResult';
-// Salary Tool Component (Make sure to create this file next!)
 import SalaryLab from '../components/PreparationOS/Tools/SalaryLab';
 import ToolLayout from "../components/PreparationOS/UI/ToolLayout";
-// UI Components
-import { ToolCard, SubjectCard } from '../components/PreparationOS/UI/Cards';
+import { ToolCard } from '../components/PreparationOS/UI/Cards';
 import InternshipGrid from '../components/PreparationOS/Internships/InternshipGrid';
-// Company Intelligence Components
 import CompanyGrid from '../components/PreparationOS/Companies/CompanyGrid';
 import CompanyDetails from '../components/PreparationOS/Companies/CompanyDetails';
+
+// Subjects system (new)
+import SubjectGrid from '../components/PreparationOS/Subjects/SubjectGrid';
+import SubjectDetail from '../components/PreparationOS/Subjects/SubjectDetail';
 
 export default function ResourcesPage() {
     const [view, setView] = useState('hub');
     const [activeTab, setActiveTab] = useState('tools');
     const [selectedCompany, setSelectedCompany] = useState(null);
+    const [selectedSubject, setSelectedSubject] = useState(null);
 
-    // --- Navigation Handlers ---
-
-    // 1. Resume Builder View
-    // 1. Resume Builder View
+    // --- Full-page views ---
     if (view === 'resume-builder') {
-        return (
-            <ToolLayout>
-                <ResumeBuilder onBack={() => setView('hub')} />
-            </ToolLayout>
-        );
+        return <ToolLayout><ResumeBuilder onBack={() => setView('hub')} /></ToolLayout>;
     }
-
     if (view === 'oa-simulator') {
-        return (
-            <ToolLayout>
-                <OASimulator onBack={() => setView('hub')} />
-            </ToolLayout>
-        );
+        return <ToolLayout><OASimulator onBack={() => setView('hub')} /></ToolLayout>;
     }
-
-    // 2. Salary Trajectory Lab View
     if (view === 'salary-lab') {
-        return (
-            <ToolLayout>
-                <SalaryLab onBack={() => setView('hub')} />
-            </ToolLayout>
-        );
+        return <ToolLayout><SalaryLab onBack={() => setView('hub')} /></ToolLayout>;
     }
-
     if (view === 'internships') {
         return (
             <ToolLayout>
-                {/* Added onBack so users can return to the main hub */}
                 <div className="pt-10">
                     <button
                         onClick={() => setView('hub')}
@@ -74,33 +57,42 @@ export default function ResourcesPage() {
         <div className="min-h-screen pt-24 pb-12 px-6 bg-[#E5E5E5] dark:bg-[#080B16] transition-colors duration-500">
             <div className="max-w-6xl mx-auto">
 
-                {/* Header Section */}
-                {!selectedCompany && (
+                {/* Header */}
+                {!selectedCompany && !selectedSubject && (
                     <div className="mb-12 text-left animate-in fade-in slide-in-from-top-4 duration-700">
                         <h1 className="text-4xl font-black mb-4 dark:text-white">
                             Preparation <span className="text-indigo-600">OS</span>
                         </h1>
                         <p className="text-slate-600 dark:text-slate-400 text-lg font-medium">
-                            Ace your interviews with the ultimate structured intelligence toolkit.
+                            Structured prep, no noise.
                         </p>
                     </div>
                 )}
 
-                {/* Tabs Switcher */}
-                {!selectedCompany && (
+                {/* Show header when in subject detail too */}
+                {selectedSubject && !selectedCompany && (
+                    <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                        <h1 className="text-4xl font-black dark:text-white">
+                            Preparation <span className="text-indigo-600">OS</span>
+                        </h1>
+                    </div>
+                )}
+
+                {/* Tab Switcher — hidden when company is selected */}
+                {!selectedCompany && !selectedSubject && (
                     <div className="flex justify-center mb-16">
                         <div className="bg-white/80 dark:bg-white/5 backdrop-blur-md p-1.5 rounded-2xl border border-white dark:border-white/10 shadow-xl flex gap-1">
                             {[
                                 { id: 'tools', label: 'Tools', icon: <Layout size={18} /> },
                                 { id: 'subjects', label: 'Subjects', icon: <BookOpen size={18} /> },
-                                { id: 'companies', label: 'Companies', icon: <Building2 size={18} /> }
-                            ].map((tab) => (
+                                { id: 'companies', label: 'Companies', icon: <Building2 size={18} /> },
+                            ].map(tab => (
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
                                     className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === tab.id
-                                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                                        : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'
+                                            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                                            : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'
                                         }`}
                                 >
                                     {tab.icon} {tab.label}
@@ -110,11 +102,11 @@ export default function ResourcesPage() {
                     </div>
                 )}
 
-                {/* Main Content Area */}
+                {/* Main content */}
                 <div className="transition-all duration-500">
 
                     {/* TOOLS TAB */}
-                    {activeTab === 'tools' && !selectedCompany && (
+                    {activeTab === 'tools' && !selectedCompany && !selectedSubject && (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in zoom-in-95 duration-500">
                             <ToolCard
                                 icon={<FileText size={28} />}
@@ -123,8 +115,6 @@ export default function ResourcesPage() {
                                 onClick={() => setView('resume-builder')}
                                 active
                             />
-
-                            {/* New Salary Lab Card */}
                             <ToolCard
                                 icon={<TrendingUp size={28} className="text-indigo-500" />}
                                 title="Salary Trajectory Lab"
@@ -132,27 +122,23 @@ export default function ResourcesPage() {
                                 onClick={() => setView('salary-lab')}
                                 active
                             />
-
                             <ToolCard
                                 icon={<Map size={28} />}
                                 title="Pathfinder"
                                 desc="Interactive roadmaps for SDE, Data, & DevOps roles."
                             />
-
                             <ToolCard
                                 icon={<Globe size={28} />}
                                 title="Mock Interviews"
                                 desc="Practice live with anonymous peers in real-time."
                             />
-
                             <ToolCard
                                 icon={<Code2 size={28} className="text-indigo-500" />}
                                 title="OA Simulator"
                                 desc="Practice real company-style timed coding tests."
-                                onClick={() => setView('oa-simulator')} // This triggers the view switch
+                                onClick={() => setView('oa-simulator')}
                                 active
                             />
-
                             <ToolCard
                                 icon={<Briefcase size={28} className="text-blue-500" />}
                                 title="Internship Hub"
@@ -165,17 +151,15 @@ export default function ResourcesPage() {
 
                     {/* SUBJECTS TAB */}
                     {activeTab === 'subjects' && !selectedCompany && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in zoom-in-95 duration-500">
-                            <SubjectCard
-                                title="DS & Algorithms"
-                                icon={<Code2 className="text-blue-500" />}
-                                topics={["Dynamic Programming", "Graph Theory", "Bitmasking", "Recursion"]}
-                            />
-                            <SubjectCard
-                                title="DBMS & SQL"
-                                icon={<Database className="text-emerald-500" />}
-                                topics={["Indexing", "Normalization", "NoSQL", "Query Optimization"]}
-                            />
+                        <div className="animate-in fade-in zoom-in-95 duration-500">
+                            {selectedSubject ? (
+                                <SubjectDetail
+                                    subject={selectedSubject}
+                                    onBack={() => setSelectedSubject(null)}
+                                />
+                            ) : (
+                                <SubjectGrid onSelectSubject={setSelectedSubject} />
+                            )}
                         </div>
                     )}
 
@@ -191,11 +175,12 @@ export default function ResourcesPage() {
                                 </div>
                             ) : (
                                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                    <CompanyGrid onSelect={(company) => setSelectedCompany(company)} />
+                                    <CompanyGrid onSelect={setSelectedCompany} />
                                 </div>
                             )}
                         </div>
                     )}
+
                 </div>
             </div>
         </div>
