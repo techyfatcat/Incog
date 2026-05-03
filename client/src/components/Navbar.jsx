@@ -66,22 +66,23 @@ export default function Navbar() {
         };
 
         fetchUser();
-    }, [location.pathname]); // 👈 only run once on load
+    }, [location.pathname]);
 
 
     const handleLogout = () => {
-        localStorage.removeItem("token"); // ✅ only remove token
+        localStorage.removeItem("token");
         setIsLoggedIn(false);
         setUserName("");
         setAvatarSeed("");
         navigate("/");
     };
+
     const isActive = (path) => location.pathname === path;
 
+    // React Router nav links (client-side)
     const navLinks = [
         { name: "Home", path: "/" },
         { name: "Community", path: "/feed" },
-        { name: "Groups", path: "/groups" }, // 🔥 ADD THIS
         { name: "Resources", path: "/resources" },
         { name: "About", path: "/about" },
     ];
@@ -119,6 +120,7 @@ export default function Navbar() {
                 <div className={`hidden md:flex items-center gap-1 p-1 rounded-full transition-all duration-500
                     ${scrolled ? "bg-transparent border-transparent" : "bg-[#d4d4d4]/40 dark:bg-white/5 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-sm"}`}
                 >
+                    {/* React Router links */}
                     {navLinks.map((link) => (
                         <Link
                             key={link.path}
@@ -132,6 +134,24 @@ export default function Navbar() {
                             {link.name}
                         </Link>
                     ))}
+
+                    {/* Groups — plain <a> for full page nav to Express/EJS */}
+                    <a
+                        href="#"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            const token = localStorage.getItem("token");
+                            if (!token) {
+                                window.location.href = "/auth";
+                                return;
+                            }
+                            // Set cookie via Express, then redirect to /groups
+                            window.location.href = `/api/auth/set-cookie?token=${token}&redirect=/groups`;
+                        }}
+                        className="px-5 py-2 rounded-full text-[13px] font-semibold transition-all text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+                    >
+                        Groups
+                    </a>
                 </div>
 
                 {/* --- RIGHT SIDE --- */}
@@ -154,7 +174,6 @@ export default function Navbar() {
                         </div>
                     ) : (
                         <div className="flex items-center gap-2">
-                            {/* Profile Dropdown Trigger */}
                             <div
                                 className="relative"
                                 onMouseEnter={() => setIsProfileHovered(true)}
@@ -194,7 +213,6 @@ export default function Navbar() {
                                 </AnimatePresence>
                             </div>
 
-                            {/* Logout Button (Outside) */}
                             <button
                                 onClick={handleLogout}
                                 className="p-2.5 rounded-full text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
@@ -221,10 +239,34 @@ export default function Navbar() {
                         className="md:hidden absolute top-24 left-6 right-6 bg-[#e5e5e5]/95 dark:bg-black/90 backdrop-blur-2xl border border-white/20 p-8 rounded-[2rem] shadow-2xl flex flex-col gap-6 pointer-events-auto"
                     >
                         {navLinks.map((link) => (
-                            <Link key={link.path} to={link.path} onClick={() => setIsMenuOpen(false)} className={`text-2xl font-bold ${isActive(link.path) ? "text-blue-600" : "text-slate-900 dark:text-white"}`}>
+                            <Link
+                                key={link.path}
+                                to={link.path}
+                                onClick={() => setIsMenuOpen(false)}
+                                className={`text-2xl font-bold ${isActive(link.path) ? "text-blue-600" : "text-slate-900 dark:text-white"}`}
+                            >
                                 {link.name}
                             </Link>
                         ))}
+
+                        {/* Groups in mobile menu — plain <a> */}
+                        <a
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                const token = localStorage.getItem("token");
+                                if (!token) {
+                                    window.location.href = "/auth";
+                                    return;
+                                }
+                                // Set cookie via Express, then redirect to /groups
+                                window.location.href = `/api/auth/set-cookie?token=${token}&redirect=/groups`;
+                            }}
+                            className="text-2xl font-bold text-slate-900 dark:text-white"
+                        >
+                            Groups
+                        </a>
+
                         {isLoggedIn && (
                             <>
                                 <hr className="border-black/5 dark:border-white/10" />

@@ -10,4 +10,19 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    proxy: {
+      // Existing API proxy
+      "/api": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+      },
+
+      // ✅ SSR group routes — forward to Express so EJS is rendered
+      "/groups": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+      },
+    },
+  },
 })

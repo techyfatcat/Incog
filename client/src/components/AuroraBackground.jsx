@@ -8,7 +8,7 @@ export default function AuroraBackground({ theme }) {
 
             {/* Base background */}
             <div
-                className={`absolute inset-0 ${isDark ? "bg-[#080B16]" : "bg-white"
+                className={`absolute inset-0 ${isDark ? "bg-[#080B16]" : "bg-[#e5e5e5]"
                     }`}
             />
 

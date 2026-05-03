@@ -81,9 +81,9 @@ export default function App() {
                 <Route path="/settings" element={<SettingsPage />} />
 
                 {/* 🔥 NEW GROUP FEATURE */}
-                <Route path="/groups" element={<Groups />} />
+                {/* <Route path="/groups" element={<Groups />} />
                 <Route path="/chat/:groupId" element={<Chat />} />
-                <Route path="/join/:code" element={<JoinGroup />} />
+                <Route path="/join/:code" element={<JoinGroup />} /> */}
               </Route>
 
               {/* 🚀 404 */}

@@ -3,28 +3,25 @@ import { User } from "../models/User.model.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import jwt from "jsonwebtoken";
 
-/* 
- HELPERS: Generate JWTs
-*/
+/* ── helpers ─────────────────────────────────────────────────────────────── */
 const generateAccessToken = (userId) => {
-    return jwt.sign(
-        { id: userId },
-        process.env.JWT_SECRET,
-        { expiresIn: "15m" } // Short-lived security token
-    );
+    return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "15m" });
 };
 
 const generateRefreshToken = (userId) => {
-    return jwt.sign(
-        { id: userId },
-        process.env.JWT_REFRESH_SECRET,
-        { expiresIn: "7d" } // Long-lived session token
-    );
+    return jwt.sign({ id: userId }, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" });
 };
 
-/* 
- REFRESH TOKEN (The fix for self-logging out)
- */
+const setTokenCookie = (res, token) => {
+    res.cookie("token", token, {
+        httpOnly: true,                                     // not accessible via JS (XSS safe)
+        secure: process.env.NODE_ENV === "production",      // HTTPS only in prod
+        sameSite: "lax",                                    // works with Vite proxy in dev
+        maxAge: 15 * 60 * 1000,                             // 15 min — matches access token
+    });
+};
+
+/* ── REFRESH TOKEN ───────────────────────────────────────────────────────── */
 export const refreshToken = async (req, res) => {
     try {
         const { refreshToken } = req.body;
@@ -33,14 +30,16 @@ export const refreshToken = async (req, res) => {
             return res.status(401).json({ error: "Refresh token required" });
         }
 
-        // Verify the long-lived refresh token
         jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET, (err, decoded) => {
             if (err) {
                 return res.status(403).json({ error: "Invalid or expired refresh token" });
             }
 
-            // Issue a new short-lived access token
             const accessToken = generateAccessToken(decoded.id);
+
+            // ✅ Refresh the cookie too
+            setTokenCookie(res, accessToken);
+
             return res.status(200).json({ accessToken });
         });
     } catch (error) {
@@ -49,9 +48,7 @@ export const refreshToken = async (req, res) => {
     }
 };
 
-/* 
- SEND OTP
-*/
+/* ── SEND OTP ────────────────────────────────────────────────────────────── */
 export const sendOtp = async (req, res) => {
     try {
         let { email } = req.body;
@@ -92,9 +89,7 @@ export const sendOtp = async (req, res) => {
     }
 };
 
-/* 
-    VERIFY OTP
-*/
+/* ── VERIFY OTP ──────────────────────────────────────────────────────────── */
 export const verifyOtp = async (req, res) => {
     try {
         let { email, otp } = req.body;
@@ -114,9 +109,7 @@ export const verifyOtp = async (req, res) => {
     }
 };
 
-/* 
- REGISTER
-*/
+/* ── REGISTER ────────────────────────────────────────────────────────────── */
 export const register = async (req, res) => {
     try {
         let { email, username, password, avatar, purpose, otp } = req.body;
@@ -145,9 +138,11 @@ export const register = async (req, res) => {
 
         await Otp.deleteMany({ email });
 
-        // GENERATE BOTH TOKENS
         const accessToken = generateAccessToken(newUser._id);
         const refreshToken = generateRefreshToken(newUser._id);
+
+        // ✅ Set cookie for SSR pages — localStorage still works for React as before
+        setTokenCookie(res, accessToken);
 
         return res.status(201).json({
             message: "User registered successfully",
@@ -166,9 +161,7 @@ export const register = async (req, res) => {
     }
 };
 
-/* 
-LOGIN
-*/
+/* ── LOGIN ───────────────────────────────────────────────────────────────── */
 export const login = async (req, res) => {
     try {
         let { email, password } = req.body;
@@ -182,9 +175,11 @@ export const login = async (req, res) => {
             return res.status(400).json({ error: "Invalid credentials" });
         }
 
-        // GENERATE BOTH TOKENS
         const accessToken = generateAccessToken(user._id);
         const refreshToken = generateRefreshToken(user._id);
+
+        // ✅ Set cookie for SSR pages — localStorage still works for React as before
+        setTokenCookie(res, accessToken);
 
         return res.status(200).json({
             message: "Login successful",

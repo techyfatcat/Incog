@@ -32,4 +32,21 @@ router.get("/me", protect, (req, res) => {
     });
 });
 
+// auth.routes.js
+router.get("/set-cookie", (req, res) => {
+    const token = req.query.token;
+    if (!token) return res.redirect("/auth");
+
+    res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 15 * 60 * 1000,
+    });
+
+    // Redirect to wherever they wanted to go
+    const redirect = req.query.redirect || "/groups";
+    res.redirect(redirect);
+});
+
 export default router;

@@ -2,6 +2,9 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import cookieParser from "cookie-parser";
+import path from "path";
+import { fileURLToPath } from "url";
 
 import avatarRoutes from "./routes/avatar.routes.js";
 import authRoutes from "./routes/auth.routes.js";
@@ -10,21 +13,29 @@ import profileRoutes from "./routes/profile.routes.js";
 import internshipRoutes from "./routes/internship.routes.js";
 import groupRoutes from "./routes/group.routes.js";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 const app = express();
 
 /* Trust proxy for production (Render, Railway, etc.) */
 app.set("trust proxy", 1);
 
+/* ── EJS setup for SSR group pages ── */
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "../views"));
+
 /* Security headers */
 app.use(
     helmet({
         crossOriginResourcePolicy: false,
+        contentSecurityPolicy: false,
     })
 );
 
 /* Body parser */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 /* CORS */
 app.use(
@@ -92,7 +103,7 @@ app.use("/api/avatar", avatarRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/profile", profileRoutes);
-app.use("/api/groups", groupRoutes);
+app.use("/groups", groupRoutes);
 
 /* 404 Handler */
 app.use((req, res) => {
