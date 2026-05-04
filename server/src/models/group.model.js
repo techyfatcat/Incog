@@ -13,12 +13,17 @@ const messageSchema = new mongoose.Schema(
             trim: true,
             maxlength: 2000,
         },
+        // Soft delete — message stays in DB, just hidden in UI
+        // Only set when user deletes their own message
+        // Never auto-expires, never auto-deleted
         deletedAt: {
             type: Date,
             default: null,
         },
     },
-    { timestamps: true }
+    {
+        timestamps: true, // createdAt = permanent send time, updatedAt = last edit time
+    }
 );
 
 const groupSchema = new mongoose.Schema(
@@ -35,14 +40,10 @@ const groupSchema = new mongoose.Schema(
             maxlength: 300,
             default: "",
         },
-        avatar: {
-            type: String,
-            default: "",
-        },
         creator: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
-            required: true,
+            required: false, // ← not required so old docs without creator don't crash
         },
         members: [
             {
@@ -50,22 +51,28 @@ const groupSchema = new mongoose.Schema(
                 ref: "User",
             },
         ],
+        // All messages stored permanently as embedded subdocuments
+        // MongoDB has no automatic cleanup — messages persist until:
+        //   1. User manually deletes (sets deletedAt)
+        //   2. The entire group is deleted
         messages: [messageSchema],
+
         inviteToken: {
             type: String,
             unique: true,
-            sparse: true,
-        },
-        inviteExpiresAt: {
-            type: Date,
-            default: null,
+            sparse: true, // allows multiple nulls
         },
     },
-    { timestamps: true }
+    {
+        timestamps: true, // group-level createdAt / updatedAt
+    }
 );
 
-// Index for fast message retrieval
-groupSchema.index({ "messages.createdAt": -1 });
+// Index on group updatedAt for sorting sidebar by recent activity
+groupSchema.index({ updatedAt: -1 });
+
+// Index to find groups a user belongs to quickly
+groupSchema.index({ members: 1 });
 
 const Group = mongoose.model("Group", groupSchema);
 export default Group;

@@ -540,19 +540,31 @@
 
     <div class="invite-box">
       <div class="invite-box-label">Invite Link</div>
-      <div class="invite-url-row">
-        <div class="invite-url-field" id="inviteUrlText"><%= inviteUrl || 'No invite link generated.' %></div>
-        <div class="invite-actions">
-          <button class="btn-icon" onclick="copyInvite()" title="Copy link" id="copyBtn">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-          </button>
-          <form method="POST" action="/groups/<%= group._id %>/invite/regenerate" style="display:inline;">
-            <button type="submit" class="btn-icon" title="Regenerate link">
-              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+      <% if (inviteUrl) { %>
+        <div class="invite-url-row">
+          <div class="invite-url-field" id="inviteUrlText"><%= inviteUrl %></div>
+          <div class="invite-actions">
+            <button class="btn-icon" onclick="copyInvite()" title="Copy link" id="copyBtn">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
             </button>
-          </form>
+            <form method="POST" action="/groups/<%= group._id %>/invite/regenerate" style="display:inline;">
+              <button type="submit" class="btn-icon" title="Regenerate link">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+              </button>
+            </form>
+          </div>
         </div>
-      </div>
+      <% } else { %>
+        <div style="margin-bottom:14px;padding:12px 14px;background:var(--bg-deep);border-radius:9px;font-size:13px;color:var(--text-4);">
+          No invite link yet. Generate one below.
+        </div>
+        <form method="POST" action="/groups/<%= group._id %>/invite/regenerate">
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;gap:8px;">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+            Generate Invite Link
+          </button>
+        </form>
+      <% } %>
     </div>
 
     <div style="display:flex;align-items:center;gap:10px;margin-top:14px;padding:11px 14px;background:var(--bg-ele);border-radius:10px;">

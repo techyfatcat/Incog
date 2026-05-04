@@ -215,13 +215,21 @@ export const joinViaInvite = async (req, res) => {
 export const regenerateInvite = async (req, res) => {
     const { groupId } = req.params;
     try {
-        const group = await Group.findOne({ _id: groupId, creator: req.user._id });
-        if (!group)
+        // Allow any member to generate if no token exists yet,
+        // otherwise only the creator can regenerate
+        const group = await Group.findOne({ _id: groupId, members: req.user._id });
+        if (!group) return res.redirect(`/groups/${groupId}?error=Group+not+found`);
+
+        const isCreator = group.creator && group.creator.toString() === req.user._id.toString();
+        const hasToken = !!group.inviteToken;
+
+        if (hasToken && !isCreator) {
             return res.redirect(`/groups/${groupId}?error=Only+the+creator+can+regenerate+the+invite`);
+        }
 
         group.inviteToken = crypto.randomBytes(16).toString("hex");
         await group.save();
-        res.redirect(`/groups/${groupId}?success=Invite+link+regenerated`);
+        res.redirect(`/groups/${groupId}?success=Invite+link+generated`);
     } catch (err) {
         res.redirect(`/groups/${groupId}?error=${encodeURIComponent(err.message)}`);
     }
