@@ -7,9 +7,21 @@ import {
 } from 'lucide-react';
 import Highlight from './Highlight';
 
-const PostCard = ({ post, searchQuery, onVote, onDelete, onReport }) => {
+const PostCard = ({ post, searchQuery, onVote, onDelete, onReport, isFullView = false }) => {
     const navigate = useNavigate();
-    const [vote, setVote] = useState(null);
+
+    // ─── Vote state: null | 'up' | 'down'
+    // Initialise from post data if the current user's id is tracked
+    const currentUserId = localStorage.getItem("userId");
+    const getInitialVote = () => {
+        if (!currentUserId) return null;
+        if (post.upvotes?.includes(currentUserId)) return 'up';
+        if (post.downvotes?.includes(currentUserId)) return 'down';
+        return null;
+    };
+
+    const [vote, setVote] = useState(getInitialVote);
+    const [localHp, setLocalHp] = useState(post.hp || 0);
     const [showOptions, setShowOptions] = useState(false);
     const [reportStep, setReportStep] = useState('menu'); // 'menu' | 'reasons' | 'success'
     const [isReporting, setIsReporting] = useState(false);
@@ -18,41 +30,59 @@ const PostCard = ({ post, searchQuery, onVote, onDelete, onReport }) => {
     const reportReasons = ["Spam", "Harassment", "Inappropriate", "Misinformation"];
 
     const goToPost = () => {
+        if (isFullView) return; // Don't navigate if already on detail page
         const existing = JSON.parse(localStorage.getItem("recentPosts")) || [];
-        const newPost = {
-            _id: post._id,
-            title: post.title,
-            postType: post.postType
-        };
-
-        const updated = [
-            newPost,
-            ...existing.filter(p => p._id !== post._id)
-        ].slice(0, 5);
-
+        const newPost = { _id: post._id, title: post.title, postType: post.postType };
+        const updated = [newPost, ...existing.filter(p => p._id !== post._id)].slice(0, 5);
         localStorage.setItem("recentPosts", JSON.stringify(updated));
-        // Dispatch event so the sidebar can listen for the update
-        window.dispatchEvent(new Event("storage"));
+        // Custom event so same-tab listeners in CommunityPage can pick it up
+        window.dispatchEvent(new CustomEvent("recentPostsUpdated"));
         navigate(`/post/${post._id}`);
     };
 
-    const handleHp = async (e, type) => {
+    // ─── Vote handler: toggle off if same vote, switch if different, enforce one-vote limit
+    const handleVote = async (e, type) => {
         e.stopPropagation();
-        const voteType = vote === type ? null : type;
-        setVote(voteType);
-        if (onVote) onVote(post._id, type);
+
+        let newVote;
+        let hpDelta;
+
+        if (vote === type) {
+            // Clicking the same button → undo vote
+            newVote = null;
+            hpDelta = type === 'up' ? -1 : 1;
+        } else if (vote === null) {
+            // No existing vote → apply new vote
+            newVote = type;
+            hpDelta = type === 'up' ? 1 : -1;
+        } else {
+            // Switching vote (up→down or down→up) → reverse by 2
+            newVote = type;
+            hpDelta = type === 'up' ? 2 : -2;
+        }
+
+        // Optimistic UI update
+        setVote(newVote);
+        setLocalHp(prev => prev + hpDelta);
+
+        if (onVote) {
+            try {
+                await onVote(post._id, type, vote);
+            } catch {
+                // Revert on failure
+                setVote(vote);
+                setLocalHp(prev => prev - hpDelta);
+            }
+        }
     };
 
     const handleReportSubmit = async (e, reason) => {
         e.stopPropagation();
         setIsReporting(true);
         const result = await onReport(post._id, reason);
-
         if (result.success) {
             setReportStep('success');
-            setTimeout(() => {
-                setIsReportedSuccessfully(true);
-            }, 1200);
+            setTimeout(() => setIsReportedSuccessfully(true), 1200);
         } else {
             setIsReporting(false);
             setReportStep('menu');
@@ -71,7 +101,6 @@ const PostCard = ({ post, searchQuery, onVote, onDelete, onReport }) => {
                 navigator.share({ title: post.title, url });
             } else {
                 navigator.clipboard.writeText(url);
-                // You could add a toast here for "Link Copied"
             }
         }
     };
@@ -96,16 +125,18 @@ const PostCard = ({ post, searchQuery, onVote, onDelete, onReport }) => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, x: -100, scale: 0.9, height: 0, marginBottom: 0 }}
                     transition={{ duration: 0.4, ease: "anticipate" }}
-                    className="relative group w-full mb-6 cursor-pointer"
-                    onClick={goToPost}
+                    className={`relative group w-full mb-6 ${!isFullView ? 'cursor-pointer' : ''}`}
+                    onClick={!isFullView ? goToPost : undefined}
                 >
-                    {/* Glassmorphism Border Glow */}
-                    <div className="absolute -inset-[1px] rounded-[26px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-blue-500/50 via-white/20 to-purple-500/50 blur-[2px]" />
+                    {/* Glassmorphism Border Glow — only on feed cards */}
+                    {!isFullView && (
+                        <div className="absolute -inset-[1px] rounded-[26px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-blue-500/50 via-white/20 to-purple-500/50 blur-[2px]" />
+                    )}
 
                     <div className="relative w-full bg-white dark:bg-[#121624] border border-gray-200 dark:border-white/5 rounded-[24px] overflow-hidden shadow-sm transition-all duration-300 group-hover:bg-white/95 dark:group-hover:bg-[#161B2E]">
                         <div className="p-6">
 
-                            {/* Success Overlay */}
+                            {/* Report Success Overlay */}
                             <AnimatePresence>
                                 {reportStep === 'success' && (
                                     <motion.div
@@ -132,29 +163,38 @@ const PostCard = ({ post, searchQuery, onVote, onDelete, onReport }) => {
                             <div className="flex items-center justify-between mb-5">
                                 <div className="flex items-center gap-3">
                                     <img
-                                        src={post.isAnonymous ? "/incognito-avatar.png" : `http://localhost:5000/api/avatar/${post.author?.avatarSeed || post.author?._id}`}
+                                        src={post.isAnonymous
+                                            ? "/incognito-avatar.png"
+                                            : `http://localhost:5000/api/avatar/${post.author?.avatarSeed || post.author?._id}`}
                                         alt="avatar"
                                         className="w-10 h-10 rounded-full object-cover border-2 border-gray-100 dark:border-white/10 p-[1px]"
                                     />
                                     <div className="flex flex-col text-left">
                                         <span className="text-[14px] font-bold text-gray-900 dark:text-white/90">
-                                            <Highlight text={post.isAnonymous ? "Anonymous" : post.author?.username || post.username} query={searchQuery} />
+                                            <Highlight
+                                                text={post.isAnonymous ? "Anonymous" : post.author?.username || post.username}
+                                                query={searchQuery}
+                                            />
                                         </span>
                                         <span className="text-[11px] text-gray-400 font-medium tracking-wide">
-                                            {new Date(post.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                            {new Date(post.createdAt).toLocaleDateString(undefined, {
+                                                month: 'short', day: 'numeric', year: 'numeric'
+                                            })}
                                         </span>
                                     </div>
                                 </div>
 
-                                <button
-                                    onClick={(e) => handleAction(e, 'options')}
-                                    className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400 transition-colors"
-                                >
-                                    <MoreHorizontal size={18} />
-                                </button>
+                                {!isFullView && (
+                                    <button
+                                        onClick={(e) => handleAction(e, 'options')}
+                                        className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400 transition-colors"
+                                    >
+                                        <MoreHorizontal size={18} />
+                                    </button>
+                                )}
                             </div>
 
-                            {/* Content Section */}
+                            {/* Content */}
                             <div className="flex flex-col gap-3 text-left">
                                 <div>
                                     <span className={`inline-block text-[9px] font-black uppercase tracking-[0.15em] px-3 py-1 rounded-lg border ${tagColors[post.postType] || "bg-gray-500/10 text-gray-400"}`}>
@@ -165,25 +205,42 @@ const PostCard = ({ post, searchQuery, onVote, onDelete, onReport }) => {
                                     <h2 className="text-[19px] font-black text-gray-900 dark:text-white tracking-tight leading-snug group-hover:text-blue-500 transition-colors">
                                         <Highlight text={post.title} query={searchQuery} />
                                     </h2>
-                                    <p className="text-[14px] text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2">
+
+                                    {/* ✅ FIX: Only clamp on feed cards, show full content on detail page */}
+                                    <p className={`text-[14px] text-gray-500 dark:text-gray-400 leading-relaxed whitespace-pre-wrap ${!isFullView ? 'line-clamp-2' : ''}`}>
                                         <Highlight text={post.content} query={searchQuery} />
                                     </p>
                                 </div>
                             </div>
 
-                            {/* Bottom Interaction Bar */}
+                            {/* Interaction Bar */}
                             <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100 dark:border-white/5">
                                 <div className="flex items-center gap-1 bg-gray-50 dark:bg-white/5 rounded-xl p-1 border border-gray-100 dark:border-white/5">
-                                    <button onClick={(e) => handleHp(e, 'up')} className="p-2 transition-all hover:scale-110 active:scale-95">
-                                        <ChevronUp size={20} className={vote === 'up' ? "text-blue-500 stroke-[3px]" : "text-gray-400"} />
+                                    {/* ✅ FIX: Vote buttons with proper one-vote-limit UI */}
+                                    <button
+                                        onClick={(e) => handleVote(e, 'up')}
+                                        className={`p-2 transition-all hover:scale-110 active:scale-95 rounded-lg ${vote === 'up' ? 'bg-blue-50 dark:bg-blue-500/10' : ''}`}
+                                        title={vote === 'up' ? 'Remove upvote' : 'Upvote'}
+                                    >
+                                        <ChevronUp
+                                            size={20}
+                                            className={vote === 'up' ? "text-blue-500 stroke-[3px]" : "text-gray-400"}
+                                        />
                                     </button>
                                     <div className="px-1 text-center min-w-[28px]">
                                         <span className={`text-[12px] font-black ${vote ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}>
-                                            {post.hp}
+                                            {localHp}
                                         </span>
                                     </div>
-                                    <button onClick={(e) => handleHp(e, 'down')} className="p-2 transition-all hover:scale-110 active:scale-95">
-                                        <ChevronDown size={20} className={vote === 'down' ? "text-red-500 stroke-[3px]" : "text-gray-400"} />
+                                    <button
+                                        onClick={(e) => handleVote(e, 'down')}
+                                        className={`p-2 transition-all hover:scale-110 active:scale-95 rounded-lg ${vote === 'down' ? 'bg-red-50 dark:bg-red-500/10' : ''}`}
+                                        title={vote === 'down' ? 'Remove downvote' : 'Downvote'}
+                                    >
+                                        <ChevronDown
+                                            size={20}
+                                            className={vote === 'down' ? "text-red-500 stroke-[3px]" : "text-gray-400"}
+                                        />
                                     </button>
                                 </div>
 
@@ -192,9 +249,14 @@ const PostCard = ({ post, searchQuery, onVote, onDelete, onReport }) => {
                                         <MessageSquare size={15} />
                                         <span>{post.commentsCount || 0}</span>
                                     </div>
-                                    <button onClick={(e) => handleAction(e, 'share')} className="p-2.5 rounded-xl text-gray-400 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:text-blue-500 transition-all active:scale-90">
-                                        <Share2 size={15} />
-                                    </button>
+                                    {!isFullView && (
+                                        <button
+                                            onClick={(e) => handleAction(e, 'share')}
+                                            className="p-2.5 rounded-xl text-gray-400 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:text-blue-500 transition-all active:scale-90"
+                                        >
+                                            <Share2 size={15} />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -202,7 +264,7 @@ const PostCard = ({ post, searchQuery, onVote, onDelete, onReport }) => {
 
                     {/* Options Dropdown */}
                     <AnimatePresence>
-                        {showOptions && reportStep !== 'success' && (
+                        {showOptions && !isFullView && reportStep !== 'success' && (
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.95, y: -10 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -222,9 +284,8 @@ const PostCard = ({ post, searchQuery, onVote, onDelete, onReport }) => {
                                             </div>
                                             <ChevronRight size={14} className="text-gray-400 group-hover/btn:translate-x-1 transition-transform" />
                                         </button>
-
                                         <button
-                                            onClick={(e) => { e.stopPropagation(); onDelete(post._id); }}
+                                            onClick={(e) => { e.stopPropagation(); onDelete && onDelete(post._id); }}
                                             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 text-red-500 transition-colors"
                                         >
                                             <Trash2 size={14} />

@@ -84,7 +84,6 @@ export default function Navbar() {
         { name: "Home", path: "/" },
         { name: "Community", path: "/feed" },
         { name: "Resources", path: "/resources" },
-        { name: "About", path: "/about" },
     ];
 
     const AVATAR_API = "http://localhost:5000/api/avatar";
