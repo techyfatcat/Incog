@@ -1,10 +1,11 @@
 // src/pages/Resources.jsx
-// Updated to include fully functional Subjects tab
+// Updated to include fully functional Subjects tab + Mock Interview
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Layout, BookOpen, Building2, FileText,
-    Map, Globe, Code2, Database, TrendingUp, Briefcase
+    Map, Code2, TrendingUp, Briefcase, Mic
 } from 'lucide-react';
 
 // Preparation OS components
@@ -17,7 +18,7 @@ import InternshipGrid from '../components/PreparationOS/Internships/InternshipGr
 import CompanyGrid from '../components/PreparationOS/Companies/CompanyGrid';
 import CompanyDetails from '../components/PreparationOS/Companies/CompanyDetails';
 
-// Subjects system (new)
+// Subjects system
 import SubjectGrid from '../components/PreparationOS/Subjects/SubjectGrid';
 import SubjectDetail from '../components/PreparationOS/Subjects/SubjectDetail';
 
@@ -26,6 +27,7 @@ export default function ResourcesPage() {
     const [activeTab, setActiveTab] = useState('tools');
     const [selectedCompany, setSelectedCompany] = useState(null);
     const [selectedSubject, setSelectedSubject] = useState(null);
+    const navigate = useNavigate();
 
     // --- Full-page views ---
     if (view === 'resume-builder') {
@@ -69,7 +71,6 @@ export default function ResourcesPage() {
                     </div>
                 )}
 
-                {/* Show header when in subject detail too */}
                 {selectedSubject && !selectedCompany && (
                     <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
                         <h1 className="text-4xl font-black dark:text-white">
@@ -78,7 +79,7 @@ export default function ResourcesPage() {
                     </div>
                 )}
 
-                {/* Tab Switcher — hidden when company is selected */}
+                {/* Tab Switcher */}
                 {!selectedCompany && !selectedSubject && (
                     <div className="flex justify-center mb-16">
                         <div className="bg-white/80 dark:bg-white/5 backdrop-blur-md p-1.5 rounded-2xl border border-white dark:border-white/10 shadow-xl flex gap-1">
@@ -91,8 +92,8 @@ export default function ResourcesPage() {
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
                                     className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === tab.id
-                                            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                                            : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'
+                                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                                        : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'
                                         }`}
                                 >
                                     {tab.icon} {tab.label}
@@ -127,11 +128,16 @@ export default function ResourcesPage() {
                                 title="Pathfinder"
                                 desc="Interactive roadmaps for SDE, Data, & DevOps roles."
                             />
+
+                            {/* ── Mock Interview — fully active, navigates to /mock-interview ── */}
                             <ToolCard
-                                icon={<Globe size={28} />}
-                                title="Mock Interviews"
-                                desc="Practice live with anonymous peers in real-time."
+                                icon={<Mic size={28} className="text-violet-500" />}
+                                title="Mock Interview"
+                                desc="AI-powered interviews with live feedback, voice mode, and detailed performance reports."
+                                onClick={() => navigate('/mock-interview')}
+                                active
                             />
+
                             <ToolCard
                                 icon={<Code2 size={28} className="text-indigo-500" />}
                                 title="OA Simulator"
@@ -175,7 +181,7 @@ export default function ResourcesPage() {
                                 </div>
                             ) : (
                                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                    <CompanyGrid onSelect={setSelectedCompany} />
+                                    <CompanyGrid onSelectCompany={setSelectedCompany} />
                                 </div>
                             )}
                         </div>

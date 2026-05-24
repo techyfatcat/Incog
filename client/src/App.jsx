@@ -20,6 +20,10 @@ import JoinGroup from "./pages/JoinGroup";
 import Groups from "./pages/Groups";
 import Chat from "./pages/Chat";
 
+import MockInterview from "./pages/MockInterview";
+import InterviewRoom from "./pages/InterviewRoom";
+import InterviewReport from "./pages/InterviewReport";
+
 // Helper component to handle conditional Navbar rendering
 function Navigation() {
   const location = useLocation();
@@ -33,15 +37,23 @@ function Navigation() {
     "/profile",
     "/settings",
     "/groups", // ✅ ADD
+    "/mock-interview",
   ];
 
   const isDynamicPostPath = location.pathname.startsWith("/post/");
   const isDynamicChatPath = location.pathname.startsWith("/chat/"); // ✅ ADD
+  const isInterviewSessionPath =
+    location.pathname.startsWith("/mock-interview/session/");
+
+  const isInterviewReportPath =
+    location.pathname.startsWith("/mock-interview/report/");
 
   const isKnownRoute =
     validPaths.includes(location.pathname) ||
     isDynamicPostPath ||
-    isDynamicChatPath; // ✅ INCLUDE
+    isDynamicChatPath ||
+    isInterviewSessionPath ||
+    isInterviewReportPath;
 
   if (!isKnownRoute) return null;
 
@@ -73,7 +85,22 @@ export default function App() {
               <Route path="/about" element={<About />} />
               <Route path="/resources" element={<Resources />} />
               <Route path="/feed" element={<CommunityPage />} />
+              <Route path="/mock-interview" element={<MockInterview />} />
 
+              <Route
+                path="/mock-interview/room"
+                element={<InterviewRoom />}
+              />
+
+              <Route
+                path="/mock-interview/session/:id"
+                element={<InterviewRoom />}
+              />
+
+              <Route
+                path="/mock-interview/report/:id"
+                element={<InterviewReport />}
+              />
               {/* 🔒 Protected Routes */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/post/:id" element={<PostDetail />} />

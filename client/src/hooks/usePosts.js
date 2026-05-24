@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { getAllPosts, votePost, reportPost as reportPostService } from "../services/postsService";
 
 export const usePosts = (searchQuery, activeFilters) => {
@@ -8,6 +8,9 @@ export const usePosts = (searchQuery, activeFilters) => {
     const [hasMore, setHasMore] = useState(true);
 
     const [debouncedQuery, setDebouncedQuery] = useState("");
+
+    // 🔥 Prevent multiple parallel calls
+    const loadingRef = useRef(false);
 
     // 🔥 Debounce search
     useEffect(() => {
@@ -26,10 +29,11 @@ export const usePosts = (searchQuery, activeFilters) => {
         JSON.stringify(activeFilters?.types || [])
     ]);
 
-    // 🔥 Fetch posts (pagination)
+    // 🔥 Fetch posts
     const fetchPosts = useCallback(async () => {
-        if (loading || !hasMore) return;
+        if (loadingRef.current || !hasMore) return;
 
+        loadingRef.current = true;
         setLoading(true);
 
         try {
@@ -48,13 +52,11 @@ export const usePosts = (searchQuery, activeFilters) => {
             const newPosts = Array.isArray(data) ? data : data.posts || [];
 
             setPosts((prev) => {
-                // 🔥 prevent duplicates
                 const existingIds = new Set(prev.map(p => p._id));
                 const filtered = newPosts.filter(p => !existingIds.has(p._id));
                 return [...prev, ...filtered];
             });
 
-            // 🔥 stop if no more data
             if (newPosts.length < 10) {
                 setHasMore(false);
             }
@@ -63,14 +65,14 @@ export const usePosts = (searchQuery, activeFilters) => {
             console.error("Feed error:", error);
         } finally {
             setLoading(false);
+            loadingRef.current = false;
         }
     }, [
         page,
         debouncedQuery,
         activeFilters?.sort,
         JSON.stringify(activeFilters?.types || []),
-        hasMore,
-        loading
+        hasMore
     ]);
 
     // 🔥 Trigger fetch
@@ -78,9 +80,9 @@ export const usePosts = (searchQuery, activeFilters) => {
         fetchPosts();
     }, [fetchPosts]);
 
-    // 🔥 Load more (infinite scroll trigger)
+    // 🔥 Load more (pagination)
     const loadMore = () => {
-        if (!loading && hasMore) {
+        if (!loadingRef.current && hasMore) {
             setPage((prev) => prev + 1);
         }
     };

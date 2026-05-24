@@ -2,220 +2,237 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import {
     ArrowLeft, Target, Briefcase, PieChart, BarChart3,
-    BrainCircuit, Sparkles, CheckCircle2, ExternalLink,
-    Zap, Bookmark, Search, Clock, Users, TrendingUp,
-    Award, Code2, ChevronRight, Star, Calendar,
-    BookOpen, MessageSquare, ThumbsUp, AlertTriangle,
-    Shield, Coffee, Layers, GitBranch, Terminal, Trophy,
-    Info, XCircle
+    BrainCircuit, CheckCircle2, ExternalLink, Zap,
+    Bookmark, Search, Clock, TrendingUp, Award,
+    Code2, ChevronRight, Star, Calendar, BookOpen,
+    MessageSquare, ThumbsUp, AlertTriangle, Shield,
+    Layers, GitBranch, Terminal, Trophy, Info,
+    XCircle, Cpu, Sparkles
 } from 'lucide-react';
 
-// ─── Animated Counter ───────────────────────────────────────────────────────
-const AnimatedCounter = ({ target, suffix = "", duration = 1.5 }) => {
+/* ── Animated counter ────────────────────────────────────────────────────── */
+const AnimatedCounter = ({ target, duration = 1.4 }) => {
     const [count, setCount] = useState(0);
     const ref = useRef(null);
     const inView = useInView(ref, { once: true });
-
     useEffect(() => {
         if (!inView) return;
         const num = parseFloat(target);
         if (isNaN(num)) { setCount(target); return; }
-        let start = 0;
+        let cur = 0;
         const step = num / (duration * 60);
-        const timer = setInterval(() => {
-            start += step;
-            if (start >= num) { setCount(num); clearInterval(timer); }
-            else setCount(Math.floor(start));
+        const id = setInterval(() => {
+            cur += step;
+            if (cur >= num) { setCount(num); clearInterval(id); }
+            else setCount(Math.floor(cur));
         }, 1000 / 60);
-        return () => clearInterval(timer);
+        return () => clearInterval(id);
     }, [inView, target, duration]);
-
-    return <span ref={ref}>{count}{suffix}</span>;
+    return <span ref={ref}>{count}</span>;
 };
 
-// ─── Stat Card ───────────────────────────────────────────────────────────────
-const StatCard = ({ label, value, icon, gradient, suffix }) => (
+/* ── Stat Card ───────────────────────────────────────────────────────────── */
+const StatCard = ({ label, value, icon, accent }) => (
     <motion.div
-        whileHover={{ y: -4, scale: 1.02 }}
+        whileHover={{ y: -3, scale: 1.02 }}
         transition={{ type: "spring", stiffness: 300 }}
-        className={`relative overflow-hidden rounded-3xl p-6 border ${gradient}`}
-    >
-        <div className="flex items-start justify-between mb-4">
-            <div className="p-2.5 rounded-2xl bg-white/10 backdrop-blur-sm">{icon}</div>
-            <div className="w-1.5 h-8 rounded-full bg-white/20" />
+        className="relative overflow-hidden rounded-2xl p-5"
+        style={{
+            background: `linear-gradient(135deg, ${accent}22 0%, ${accent}10 100%)`,
+            border: `1px solid ${accent}35`,
+        }}>
+        <div className="flex items-start justify-between mb-3">
+            <div className="p-2 rounded-xl" style={{ background: `${accent}25` }}>
+                {React.cloneElement(icon, { size: 16, color: accent })}
+            </div>
         </div>
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 mb-1">{label}</p>
-        <p className="text-3xl font-black text-white leading-none">
-            <AnimatedCounter target={value} suffix={suffix || ""} />
-        </p>
-        <div className="absolute -right-4 -bottom-4 w-20 h-20 rounded-full bg-white/5 blur-xl" />
+        <p className="text-[9px] font-black uppercase tracking-[0.18em] mb-1" style={{ color: `${accent}99` }}>{label}</p>
+        <p className="text-2xl font-black text-white leading-none">{value}</p>
     </motion.div>
 );
 
-// ─── Difficulty Bar ──────────────────────────────────────────────────────────
-const DifficultyBar = ({ label, percent, color, count }) => (
-    <div className="space-y-2">
-        <div className="flex justify-between items-center text-[11px] font-black uppercase tracking-widest">
+/* ── Difficulty Bar ──────────────────────────────────────────────────────── */
+const DiffBar = ({ label, percent, count, color }) => (
+    <div className="space-y-1.5">
+        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
             <span className="text-slate-400 dark:text-white/40">{label}</span>
             <div className="flex items-center gap-2">
-                <span className="text-slate-500 dark:text-white/30 font-medium normal-case">{count} qs</span>
-                <span className="dark:text-white text-slate-700">{percent}%</span>
+                <span className="text-slate-400 dark:text-white/25 font-medium normal-case">{count} qs</span>
+                <span className="dark:text-white text-slate-600">{percent}%</span>
             </div>
         </div>
-        <div className="h-2.5 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+        <div className="h-2 rounded-full overflow-hidden" style={{ background: "rgba(0,0,0,0.08)" }}>
             <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${percent}%` }}
-                transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
-                className={`h-full rounded-full ${color}`}
+                transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+                className="h-full rounded-full"
+                style={{ background: color }}
             />
         </div>
     </div>
 );
 
-// ─── Topic Chip ──────────────────────────────────────────────────────────────
+/* ── Topic Chip ──────────────────────────────────────────────────────────── */
 const TopicChip = ({ name, value, rank }) => (
     <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: rank * 0.05 }}
-        className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 hover:border-indigo-500/30 transition-all group"
-    >
-        <div className="w-8 h-8 rounded-xl bg-indigo-500/10 flex items-center justify-center text-xs font-black text-indigo-500">
+        initial={{ opacity: 0, x: -12 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: rank * 0.04 }}
+        className="flex items-center gap-3 p-3 rounded-2xl transition-all group"
+        style={{
+            background: "var(--chip-bg, rgba(0,0,0,0.03))",
+            border: "1px solid var(--chip-border, rgba(0,0,0,0.06))",
+        }}>
+        <div className="w-7 h-7 rounded-xl flex items-center justify-center text-[10px] font-black shrink-0"
+            style={{ background: "rgba(99,102,241,0.12)", color: "#6366f1" }}>
             #{rank + 1}
         </div>
         <div className="flex-1 min-w-0">
-            <p className="text-xs font-black dark:text-white text-slate-700 truncate">{name}</p>
-            <div className="h-1 mt-1.5 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+            <p className="text-xs font-black text-slate-700 dark:text-white truncate">{name}</p>
+            <div className="h-1 mt-1.5 w-full rounded-full overflow-hidden" style={{ background: "rgba(0,0,0,0.08)" }}>
                 <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${value}%` }}
-                    transition={{ duration: 0.8, delay: rank * 0.05 + 0.3 }}
-                    className="h-full bg-indigo-500 rounded-full"
+                    transition={{ duration: 0.8, delay: rank * 0.04 + 0.2 }}
+                    className="h-full rounded-full"
+                    style={{ background: "linear-gradient(90deg,#6366f1,#8b5cf6)" }}
                 />
             </div>
         </div>
-        <span className="text-xs font-black text-indigo-500 shrink-0">{value}%</span>
+        <span className="text-[11px] font-black shrink-0" style={{ color: "#6366f1" }}>{value}%</span>
     </motion.div>
 );
 
-// ─── Experience Badge ────────────────────────────────────────────────────────
-const ExperienceBadge = ({ exp }) => {
-    const colors = {
-        Positive: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
-        Neutral: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
-        Negative: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
-    };
-    const icons = {
-        Positive: <ThumbsUp size={12} />,
-        Neutral: <Info size={12} />,
-        Negative: <AlertTriangle size={12} />,
-    };
+/* ── Experience Badge ────────────────────────────────────────────────────── */
+const ExpBadge = ({ exp }) => {
+    const config = {
+        Positive: { bg: "rgba(16,185,129,0.07)", border: "rgba(16,185,129,0.2)", text: "#10b981", icon: <ThumbsUp size={12} /> },
+        Neutral: { bg: "rgba(245,158,11,0.07)", border: "rgba(245,158,11,0.2)", text: "#f59e0b", icon: <Info size={12} /> },
+        Negative: { bg: "rgba(244,63,94,0.07)", border: "rgba(244,63,94,0.2)", text: "#f43f5e", icon: <AlertTriangle size={12} /> },
+    }[exp.sentiment] || {};
     return (
-        <div className={`flex items-start gap-3 p-4 rounded-2xl border ${colors[exp.sentiment]}`}>
-            <div className="mt-0.5 shrink-0">{icons[exp.sentiment]}</div>
-            <p className="text-xs font-semibold leading-relaxed">{exp.text}</p>
+        <div className="flex items-start gap-3 p-4 rounded-2xl"
+            style={{ background: config.bg, border: `1px solid ${config.border}` }}>
+            <span className="mt-0.5 shrink-0" style={{ color: config.text }}>{config.icon}</span>
+            <p className="text-xs font-semibold leading-relaxed text-slate-600 dark:text-white/70">{exp.text}</p>
         </div>
     );
 };
 
-// ─── Timeline Step ───────────────────────────────────────────────────────────
+/* ── Timeline Step ───────────────────────────────────────────────────────── */
 const TimelineStep = ({ step, index, total }) => (
     <div className="flex gap-4 items-start">
         <div className="flex flex-col items-center shrink-0">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white text-xs font-black shadow-lg shadow-indigo-500/30">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-[11px] font-black"
+                style={{ background: "linear-gradient(135deg,#6366f1,#4f46e5)", boxShadow: "0 4px 12px rgba(99,102,241,0.3)" }}>
                 {index + 1}
             </div>
-            {index < total - 1 && <div className="w-0.5 h-6 bg-indigo-500/20 mt-1" />}
+            {index < total - 1 && (
+                <div className="w-px h-6 mt-1" style={{ background: "rgba(99,102,241,0.2)" }} />
+            )}
         </div>
-        <div className="pb-6">
-            <p className="text-sm font-black dark:text-white text-slate-700">{step.name}</p>
-            <p className="text-[11px] text-slate-400 dark:text-white/40 mt-0.5">{step.description}</p>
-            <div className="flex items-center gap-2 mt-2">
-                <Clock size={10} className="text-indigo-500" />
-                <span className="text-[10px] font-bold text-indigo-500">{step.duration}</span>
+        <div className="pb-5">
+            <p className="text-sm font-black text-slate-800 dark:text-white">{step.name}</p>
+            <p className="text-[11px] text-slate-400 dark:text-white/35 mt-0.5">{step.description}</p>
+            <div className="flex items-center gap-1.5 mt-1.5">
+                <Clock size={9} style={{ color: "#6366f1" }} />
+                <span className="text-[10px] font-bold" style={{ color: "#6366f1" }}>{step.duration}</span>
             </div>
         </div>
     </div>
 );
 
-// ─── Question Row ─────────────────────────────────────────────────────────────
+/* ── Question Row ────────────────────────────────────────────────────────── */
 const QuestionRow = ({ q, isSolved, onToggle, isBookmarked, onBookmark }) => {
     const leetcodeUrl = `https://leetcode.com/problems/${q.title.toLowerCase().replace(/\s+/g, "-")}/`;
     const diffStyle = {
-        Hard: "bg-rose-500/10 text-rose-500 border-rose-500/20",
-        Medium: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-        Easy: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-    };
+        Hard: { bg: "rgba(244,63,94,0.08)", border: "rgba(244,63,94,0.2)", color: "#f43f5e" },
+        Medium: { bg: "rgba(245,158,11,0.08)", border: "rgba(245,158,11,0.2)", color: "#f59e0b" },
+        Easy: { bg: "rgba(16,185,129,0.08)", border: "rgba(16,185,129,0.2)", color: "#10b981" },
+    }[q.difficulty] || {};
 
     return (
         <motion.div
             layout
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97 }}
-            className={`group flex items-center gap-4 p-5 rounded-[24px] border transition-all duration-300 ${isSolved
-                    ? "bg-emerald-500/5 border-emerald-500/20"
-                    : "bg-slate-50 dark:bg-white/[0.03] border-transparent hover:border-indigo-500/20"
-                }`}
+            className="group flex items-center gap-4 p-4 rounded-[20px] transition-all duration-200"
+            style={isSolved ? {
+                background: "rgba(16,185,129,0.05)",
+                border: "1px solid rgba(16,185,129,0.2)",
+            } : {
+                background: "var(--row-bg, rgba(0,0,0,0.02))",
+                border: "1px solid transparent",
+            }}
+            onMouseEnter={e => !isSolved && (e.currentTarget.style.borderColor = "rgba(99,102,241,0.2)")}
+            onMouseLeave={e => !isSolved && (e.currentTarget.style.borderColor = "transparent")}
         >
-            {/* Solved Toggle */}
+            {/* Toggle */}
             <button
                 onClick={() => onToggle(q.title)}
-                className={`shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 ${isSolved
-                        ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25"
-                        : "bg-white dark:bg-white/5 text-slate-300 dark:text-white/20 border border-slate-200 dark:border-white/10 hover:border-indigo-500/40"
-                    }`}
-            >
-                <CheckCircle2 size={20} />
+                className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-400"
+                style={isSolved ? {
+                    background: "linear-gradient(135deg,#10b981,#059669)",
+                    boxShadow: "0 4px 12px rgba(16,185,129,0.3)",
+                    color: "#fff",
+                } : {
+                    background: "var(--card-bg, #fff)",
+                    border: "1px solid rgba(0,0,0,0.1)",
+                    color: "#cbd5e1",
+                }}>
+                <CheckCircle2 size={18} />
             </button>
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-                <h4 className={`text-sm font-bold truncate transition-all ${isSolved ? "text-emerald-600 dark:text-emerald-400 line-through opacity-50" : "dark:text-white text-slate-800"
+                <h4 className={`text-sm font-bold truncate transition-all ${isSolved ? "line-through opacity-40 text-emerald-600 dark:text-emerald-400" : "text-slate-800 dark:text-white"
                     }`}>{q.title}</h4>
-                <div className="flex items-center gap-2 mt-1 flex-wrap">
-                    <span className="text-[10px] font-black uppercase text-indigo-500 tracking-wider">{q.topic}</span>
+                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                    <span className="text-[9px] font-black uppercase tracking-wider" style={{ color: "#6366f1" }}>{q.topic}</span>
                     {q.frequency && (
                         <>
-                            <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-white/20" />
-                            <div className="flex items-center gap-1">
-                                <TrendingUp size={10} className="text-amber-500" />
-                                <span className="text-[10px] font-bold text-amber-500">{q.frequency}% asked</span>
-                            </div>
+                            <span className="w-1 h-1 rounded-full bg-slate-200 dark:bg-white/15" />
+                            <span className="text-[9px] font-bold text-amber-500 flex items-center gap-0.5">
+                                <TrendingUp size={8} /> {q.frequency}% asked
+                            </span>
                         </>
                     )}
                     {q.pattern && (
                         <>
-                            <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-white/20" />
-                            <span className="text-[10px] font-medium text-slate-400 dark:text-white/30">{q.pattern}</span>
+                            <span className="w-1 h-1 rounded-full bg-slate-200 dark:bg-white/15" />
+                            <span className="text-[9px] font-medium text-slate-400 dark:text-white/25">{q.pattern}</span>
                         </>
                     )}
                 </div>
             </div>
 
-            {/* Right Side */}
+            {/* Right side */}
             <div className="flex items-center gap-3 shrink-0">
-                <span className={`text-[10px] font-black px-3 py-1 rounded-lg border ${diffStyle[q.difficulty]}`}>
+                <span className="text-[9px] font-black px-2.5 py-1 rounded-lg"
+                    style={{ background: diffStyle.bg, border: `1px solid ${diffStyle.border}`, color: diffStyle.color }}>
                     {q.difficulty}
                 </span>
-                <div className="flex gap-1.5 pl-3 border-l border-slate-200 dark:border-white/10">
-                    <a
-                        href={leetcodeUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="p-2 bg-white dark:bg-white/5 rounded-xl text-slate-400 hover:text-indigo-500 transition-all hover:scale-110 border border-slate-100 dark:border-white/5"
-                    >
-                        <ExternalLink size={15} />
+                <div className="flex gap-1.5 pl-3" style={{ borderLeft: "1px solid rgba(0,0,0,0.07)" }}>
+                    <a href={leetcodeUrl} target="_blank" rel="noreferrer"
+                        className="p-2 rounded-xl text-slate-400 hover:text-indigo-500 transition-all hover:scale-110"
+                        style={{ background: "var(--card-bg, #fff)", border: "1px solid rgba(0,0,0,0.07)" }}>
+                        <ExternalLink size={13} />
                     </a>
                     <button
                         onClick={() => onBookmark(q.title)}
-                        className={`p-2 rounded-xl transition-all hover:scale-110 border ${isBookmarked
-                                ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
-                                : "bg-white dark:bg-white/5 text-slate-400 hover:text-rose-500 border-slate-100 dark:border-white/5"
-                            }`}
-                    >
-                        <Bookmark size={15} />
+                        className="p-2 rounded-xl transition-all hover:scale-110"
+                        style={isBookmarked ? {
+                            background: "rgba(244,63,94,0.08)",
+                            border: "1px solid rgba(244,63,94,0.2)",
+                            color: "#f43f5e",
+                        } : {
+                            background: "var(--card-bg, #fff)",
+                            border: "1px solid rgba(0,0,0,0.07)",
+                            color: "#94a3b8",
+                        }}>
+                        <Bookmark size={13} />
                     </button>
                 </div>
             </div>
@@ -223,12 +240,13 @@ const QuestionRow = ({ q, isSolved, onToggle, isBookmarked, onBookmark }) => {
     );
 };
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+/* ══ MAIN COMPONENT ══════════════════════════════════════════════════════════ */
 export default function CompanyDetails({ company, onBack }) {
     const [searchQuery, setSearchQuery] = useState("");
     const [difficultyFilter, setDifficultyFilter] = useState("All");
     const [topicFilter, setTopicFilter] = useState("All");
-    const [activeTab, setActiveTab] = useState("questions"); // questions | process | intel | experiences
+    const [activeTab, setActiveTab] = useState("questions");
+
     const [solvedQuestions, setSolvedQuestions] = useState(() => {
         try { return JSON.parse(localStorage.getItem(`solved_${company?.id}`) || "[]"); } catch { return []; }
     });
@@ -237,41 +255,32 @@ export default function CompanyDetails({ company, onBack }) {
     });
 
     useEffect(() => {
-        if (company?.id) {
-            localStorage.setItem(`solved_${company.id}`, JSON.stringify(solvedQuestions));
-        }
+        if (company?.id) localStorage.setItem(`solved_${company.id}`, JSON.stringify(solvedQuestions));
     }, [solvedQuestions, company?.id]);
-
     useEffect(() => {
-        if (company?.id) {
-            localStorage.setItem(`bookmarked_${company.id}`, JSON.stringify(bookmarkedQuestions));
-        }
+        if (company?.id) localStorage.setItem(`bookmarked_${company.id}`, JSON.stringify(bookmarkedQuestions));
     }, [bookmarkedQuestions, company?.id]);
 
-    const toggleSolved = (title) =>
-        setSolvedQuestions(prev => prev.includes(title) ? prev.filter(t => t !== title) : [...prev, title]);
-
-    const toggleBookmark = (title) =>
-        setBookmarkedQuestions(prev => prev.includes(title) ? prev.filter(t => t !== title) : [...prev, title]);
+    const toggleSolved = t => setSolvedQuestions(p => p.includes(t) ? p.filter(x => x !== t) : [...p, t]);
+    const toggleBookmark = t => setBookmarkedQuestions(p => p.includes(t) ? p.filter(x => x !== t) : [...p, t]);
 
     const allTopics = useMemo(() => {
         if (!company?.questions) return [];
         return ["All", ...new Set(company.questions.map(q => q.topic))];
     }, [company?.questions]);
 
-    const filteredQuestions = useMemo(() => {
+    const filtered = useMemo(() => {
         if (!company?.questions) return [];
         return company.questions.filter(q => {
-            const matchSearch = q.title.toLowerCase().includes(searchQuery.toLowerCase());
-            const matchDiff = difficultyFilter === "All" || q.difficulty === difficultyFilter;
-            const matchTopic = topicFilter === "All" || q.topic === topicFilter;
-            return matchSearch && matchDiff && matchTopic;
+            return q.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
+                (difficultyFilter === "All" || q.difficulty === difficultyFilter) &&
+                (topicFilter === "All" || q.topic === topicFilter);
         });
     }, [company?.questions, searchQuery, difficultyFilter, topicFilter]);
 
     const solvedCount = solvedQuestions.filter(t => company?.questions?.some(q => q.title === t)).length;
-    const totalQuestions = company?.questions?.length || 0;
-    const progress = totalQuestions > 0 ? Math.round((solvedCount / totalQuestions) * 100) : 0;
+    const totalQ = company?.questions?.length || 0;
+    const progress = totalQ > 0 ? Math.round((solvedCount / totalQ) * 100) : 0;
     const easyCount = company?.questions?.filter(q => q.difficulty === "Easy").length || 0;
     const medCount = company?.questions?.filter(q => q.difficulty === "Medium").length || 0;
     const hardCount = company?.questions?.filter(q => q.difficulty === "Hard").length || 0;
@@ -279,123 +288,157 @@ export default function CompanyDetails({ company, onBack }) {
     if (!company) return null;
 
     const tabs = [
-        { id: "questions", label: "Question Bank", icon: <Code2 size={15} /> },
-        { id: "process", label: "Interview Process", icon: <GitBranch size={15} /> },
-        { id: "intel", label: "Topic Intel", icon: <BarChart3 size={15} /> },
-        { id: "experiences", label: "Experiences", icon: <MessageSquare size={15} /> },
+        { id: "questions", label: "Question Bank", icon: <Code2 size={14} /> },
+        { id: "process", label: "Interview Process", icon: <GitBranch size={14} /> },
+        { id: "intel", label: "Topic Intel", icon: <BarChart3 size={14} /> },
+        { id: "experiences", label: "Experiences", icon: <MessageSquare size={14} /> },
     ];
 
     return (
         <div className="pb-24 text-left">
+
             {/* ── Top Nav ── */}
-            <div className="flex justify-between items-center mb-10">
+            <div className="flex justify-between items-center mb-8">
                 <motion.button
                     onClick={onBack}
-                    whileHover={{ x: -4 }}
-                    className="flex items-center gap-2 text-slate-400 hover:text-indigo-500 font-bold text-sm transition-colors"
-                >
-                    <ArrowLeft size={18} /> Back to Companies
+                    whileHover={{ x: -3 }}
+                    className="flex items-center gap-2 text-slate-400 hover:text-indigo-500 font-bold text-sm transition-colors">
+                    <ArrowLeft size={16} /> Back to Companies
                 </motion.button>
 
-                {/* Prep Score Ring */}
-                <div className="flex items-center gap-4 bg-white dark:bg-white/5 px-5 py-2.5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
+                {/* Prep Score */}
+                <div className="flex items-center gap-4 px-4 py-2.5 rounded-2xl"
+                    style={{
+                        background: "var(--card-bg, #fff)",
+                        border: "1px solid var(--card-border, rgba(0,0,0,0.07))",
+                        boxShadow: "0 2px 10px rgba(0,0,0,0.04)"
+                    }}>
                     <div className="text-right">
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">Prep Score</p>
-                        <p className="text-sm font-black dark:text-white">{progress}%</p>
-                        <p className="text-[9px] text-slate-400">{solvedCount}/{totalQuestions} solved</p>
+                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.15em]">Prep Score</p>
+                        <p className="text-sm font-black text-slate-800 dark:text-white">{progress}%</p>
+                        <p className="text-[9px] text-slate-400">{solvedCount}/{totalQ} solved</p>
                     </div>
-                    <div className="relative w-12 h-12">
-                        <svg className="w-full h-full -rotate-90" viewBox="0 0 48 48">
-                            <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-slate-100 dark:text-white/5" />
-                            <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="transparent"
-                                strokeDasharray="125.6"
-                                strokeDashoffset={125.6 - (progress / 100) * 125.6}
-                                strokeLinecap="round"
-                                className="text-indigo-500 transition-all duration-700"
-                            />
+                    <div className="relative w-11 h-11">
+                        <svg className="w-full h-full -rotate-90" viewBox="0 0 44 44">
+                            <circle cx="22" cy="22" r="18" stroke="currentColor" strokeWidth="3.5" fill="transparent" className="text-slate-100 dark:text-white/5" />
+                            <circle cx="22" cy="22" r="18" stroke="#6366f1" strokeWidth="3.5" fill="transparent"
+                                strokeDasharray="113" strokeDashoffset={113 - (progress / 100) * 113}
+                                strokeLinecap="round" style={{ transition: "stroke-dashoffset 0.7s ease" }} />
                         </svg>
-                        <Zap size={14} className="text-indigo-500 absolute inset-0 m-auto" />
+                        <Zap size={12} style={{ color: "#6366f1" }} className="absolute inset-0 m-auto" />
                     </div>
                 </div>
             </div>
 
-            {/* ── Hero Header ── */}
-            <div className="relative rounded-[40px] overflow-hidden mb-8 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 border border-white/5 shadow-2xl">
-                {/* BG decoration */}
-                <div className="absolute inset-0 opacity-30">
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-600 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-violet-700 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/4" />
+            {/* ── Hero ── */}
+            <div className="relative rounded-[36px] overflow-hidden mb-8 shadow-2xl"
+                style={{ background: "linear-gradient(135deg,#0f0f1a 0%,#1a1040 50%,#0f1520 100%)" }}>
+                {/* BG blobs */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full opacity-20"
+                        style={{ background: company.color, filter: "blur(80px)" }} />
+                    <div className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full opacity-15"
+                        style={{ background: "#7c3aed", filter: "blur(70px)" }} />
                 </div>
 
-                <div className="relative z-10 p-10">
-                    <div className="flex flex-col md:flex-row md:items-center gap-8">
+                {/* Noise texture overlay */}
+                <div className="absolute inset-0 opacity-[0.03]"
+                    style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")" }} />
+
+                <div className="relative z-10 p-8 md:p-10">
+                    <div className="flex flex-col md:flex-row md:items-start gap-7">
                         {/* Logo */}
-                        <div className="w-20 h-20 shrink-0 bg-white/10 backdrop-blur-md rounded-[24px] border border-white/20 flex items-center justify-center shadow-2xl overflow-hidden p-4">
-                            <img src={company.logo} alt={company.name} className="w-full h-full object-contain brightness-0 invert" />
+                        <div className="w-16 h-16 shrink-0 rounded-[20px] overflow-hidden flex items-center justify-center p-3 backdrop-blur-md"
+                            style={{
+                                background: "rgba(255,255,255,0.08)",
+                                border: "1px solid rgba(255,255,255,0.15)",
+                                boxShadow: `0 8px 32px rgba(0,0,0,0.3)`
+                            }}>
+                            <img src={company.logo} alt={company.name}
+                                className="w-full h-full object-contain brightness-0 invert"
+                                onError={e => e.target.style.opacity = 0} />
                         </div>
 
-                        {/* Title Block */}
+                        {/* Info */}
                         <div className="flex-1">
                             <div className="flex flex-wrap gap-2 mb-3">
-                                <span className="px-3 py-1 bg-indigo-500/20 text-indigo-300 rounded-lg text-[10px] font-black uppercase tracking-widest border border-indigo-500/20">{company.category}</span>
-                                <span className="px-3 py-1 bg-rose-500/20 text-rose-300 rounded-lg text-[10px] font-black uppercase tracking-widest border border-rose-500/20">Level: {company.difficulty}</span>
+                                <span className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest"
+                                    style={{ background: "rgba(99,102,241,0.2)", color: "#a5b4fc", border: "1px solid rgba(99,102,241,0.3)" }}>
+                                    {company.category}
+                                </span>
+                                <span className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest"
+                                    style={{ background: "rgba(244,63,94,0.2)", color: "#fca5a5", border: "1px solid rgba(244,63,94,0.3)" }}>
+                                    Level: {company.difficulty}
+                                </span>
                                 {company.isHiring && (
-                                    <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-500/20 flex items-center gap-1">
+                                    <span className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5"
+                                        style={{ background: "rgba(16,185,129,0.2)", color: "#6ee7b7", border: "1px solid rgba(16,185,129,0.3)" }}>
                                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Actively Hiring
                                     </span>
                                 )}
                             </div>
-                            <h1 className="text-5xl lg:text-6xl font-black text-white leading-none tracking-tighter mb-3">{company.name}</h1>
-                            <p className="text-white/50 text-sm max-w-xl leading-relaxed">{company.description || "One of the most sought-after companies for technical roles. Known for rigorous interviews and competitive compensation."}</p>
+                            <h1 className="text-4xl lg:text-5xl font-black text-white leading-none tracking-tighter mb-3">
+                                {company.name}
+                            </h1>
+                            <p className="text-white/45 text-sm max-w-lg leading-relaxed">{
+                                company.description || "One of the most sought-after companies for technical roles."
+                            }</p>
                         </div>
 
-                        {/* Quick Stats Vertical */}
-                        <div className="flex md:flex-col gap-3">
-                            <div className="text-center px-5 py-3 bg-white/5 rounded-2xl border border-white/10">
-                                <p className="text-2xl font-black text-white">{company.rating || "4.2"}</p>
-                                <p className="text-[9px] text-white/40 font-bold uppercase tracking-wider">Rating</p>
-                            </div>
-                            <div className="text-center px-5 py-3 bg-white/5 rounded-2xl border border-white/10">
-                                <p className="text-2xl font-black text-white">{company.employees || "10k+"}</p>
-                                <p className="text-[9px] text-white/40 font-bold uppercase tracking-wider">Employees</p>
-                            </div>
+                        {/* Quick stats */}
+                        <div className="flex md:flex-col gap-2.5 shrink-0">
+                            {[
+                                { val: company.rating || "4.2", sub: "Rating" },
+                                { val: company.employees || "10k+", sub: "Employees" },
+                            ].map(s => (
+                                <div key={s.sub} className="text-center px-5 py-3 rounded-2xl"
+                                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                                    <p className="text-2xl font-black text-white">{s.val}</p>
+                                    <p className="text-[9px] text-white/35 font-bold uppercase tracking-wider">{s.sub}</p>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
-                    {/* Stat Cards Row */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-                        <StatCard label="Avg. Rounds" value={company.rounds} icon={<Target size={18} className="text-white/80" />} gradient="bg-indigo-600/30 border-indigo-500/20" />
-                        <StatCard label="Salary (LPA)" value={company.salary} icon={<Briefcase size={18} className="text-white/80" />} gradient="bg-emerald-600/30 border-emerald-500/20" />
-                        <StatCard label="Acceptance" value={company.acceptance} icon={<PieChart size={18} className="text-white/80" />} gradient="bg-rose-600/30 border-rose-500/20" />
-                        <StatCard label="Questions" value={totalQuestions} icon={<Code2 size={18} className="text-white/80" />} gradient="bg-amber-600/30 border-amber-500/20" />
+                    {/* Stat cards */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-8">
+                        <StatCard label="Avg. Rounds" value={company.rounds} icon={<Target />} accent="#6366f1" />
+                        <StatCard label="Salary (LPA)" value={company.salary} icon={<Briefcase />} accent="#10b981" />
+                        <StatCard label="Acceptance" value={company.acceptance} icon={<PieChart />} accent="#f43f5e" />
+                        <StatCard label="Questions" value={totalQ} icon={<Code2 />} accent="#f59e0b" />
                     </div>
                 </div>
             </div>
 
-            {/* ── Difficulty Overview Strip ── */}
-            <div className="grid grid-cols-3 gap-4 mb-8">
+            {/* ── Difficulty Overview ── */}
+            <div className="grid grid-cols-3 gap-3 mb-8">
                 {[
-                    { label: "Easy", count: easyCount, percent: company.difficultySplit?.easy, color: "bg-emerald-500", textColor: "text-emerald-500", bg: "bg-emerald-500/10 border-emerald-500/20" },
-                    { label: "Medium", count: medCount, percent: company.difficultySplit?.medium, color: "bg-amber-500", textColor: "text-amber-500", bg: "bg-amber-500/10 border-amber-500/20" },
-                    { label: "Hard", count: hardCount, percent: company.difficultySplit?.hard, color: "bg-rose-500", textColor: "text-rose-500", bg: "bg-rose-500/10 border-rose-500/20" },
+                    { label: "Easy", count: easyCount, pct: company.difficultySplit?.easy, color: "#10b981", border: "rgba(16,185,129,0.25)", bg: "rgba(16,185,129,0.06)" },
+                    { label: "Medium", count: medCount, pct: company.difficultySplit?.medium, color: "#f59e0b", border: "rgba(245,158,11,0.25)", bg: "rgba(245,158,11,0.06)" },
+                    { label: "Hard", count: hardCount, pct: company.difficultySplit?.hard, color: "#f43f5e", border: "rgba(244,63,94,0.25)", bg: "rgba(244,63,94,0.06)" },
                 ].map(d => (
                     <motion.div
                         key={d.label}
                         whileHover={{ scale: 1.02 }}
-                        className={`p-5 rounded-3xl border ${d.bg} cursor-pointer`}
-                        onClick={() => setDifficultyFilter(prev => prev === d.label ? "All" : d.label)}
-                    >
-                        <div className="flex justify-between items-start mb-3">
-                            <span className={`text-xs font-black uppercase tracking-widest ${d.textColor}`}>{d.label}</span>
-                            <span className={`text-[10px] font-black ${d.textColor}`}>{d.percent}%</span>
+                        onClick={() => setDifficultyFilter(p => p === d.label ? "All" : d.label)}
+                        className="p-5 rounded-[24px] cursor-pointer transition-all"
+                        style={{
+                            background: difficultyFilter === d.label ? `${d.color}18` : d.bg,
+                            border: `1px solid ${difficultyFilter === d.label ? d.color : d.border}`,
+                            boxShadow: difficultyFilter === d.label ? `0 4px 20px ${d.color}20` : "none",
+                        }}>
+                        <div className="flex justify-between items-start mb-2">
+                            <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: d.color }}>{d.label}</span>
+                            <span className="text-[10px] font-black" style={{ color: d.color }}>{d.pct}%</span>
                         </div>
-                        <p className={`text-3xl font-black ${d.textColor} mb-2`}>{d.count}</p>
-                        <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                        <p className="text-3xl font-black mb-2" style={{ color: d.color }}>{d.count}</p>
+                        <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: "rgba(0,0,0,0.08)" }}>
                             <motion.div
                                 initial={{ width: 0 }}
-                                animate={{ width: `${d.percent}%` }}
+                                animate={{ width: `${d.pct}%` }}
                                 transition={{ duration: 0.8, ease: "easeOut" }}
-                                className={`h-full rounded-full ${d.color}`}
+                                className="h-full rounded-full"
+                                style={{ background: d.color }}
                             />
                         </div>
                     </motion.div>
@@ -403,84 +446,95 @@ export default function CompanyDetails({ company, onBack }) {
             </div>
 
             {/* ── Tabs ── */}
-            <div className="flex gap-2 mb-8 overflow-x-auto pb-1">
+            <div className="flex gap-2 mb-7 overflow-x-auto pb-1">
                 {tabs.map(tab => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all ${activeTab === tab.id
-                                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30"
-                                : "bg-white dark:bg-white/5 text-slate-500 dark:text-white/40 border border-slate-100 dark:border-white/10 hover:text-indigo-500"
-                            }`}
-                    >
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider whitespace-nowrap transition-all duration-200"
+                        style={activeTab === tab.id ? {
+                            background: "linear-gradient(135deg,#6366f1,#4f46e5)",
+                            color: "#fff",
+                            boxShadow: "0 4px 14px rgba(99,102,241,0.3)",
+                            border: "1px solid transparent",
+                        } : {
+                            background: "var(--pill-bg, rgba(0,0,0,0.04))",
+                            color: "var(--pill-text, #94a3b8)",
+                            border: "1px solid var(--pill-border, rgba(0,0,0,0.08))",
+                        }}>
                         {tab.icon} {tab.label}
                     </button>
                 ))}
             </div>
 
+            {/* ══ TAB CONTENT ══════════════════════════════════════════════════ */}
             <AnimatePresence mode="wait">
 
-                {/* ══ QUESTION BANK TAB ══ */}
+                {/* QUESTION BANK */}
                 {activeTab === "questions" && (
-                    <motion.div key="questions" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                        <div className="bg-white dark:bg-white/[0.03] rounded-[40px] border border-slate-100 dark:border-white/5 p-8 shadow-sm">
+                    <motion.div key="questions"
+                        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                        <div className="rounded-[32px] p-7"
+                            style={{
+                                background: "var(--card-bg, #fff)",
+                                border: "1px solid var(--card-border, rgba(0,0,0,0.07))",
+                                boxShadow: "0 2px 20px rgba(0,0,0,0.04)"
+                            }}>
                             {/* Filters */}
-                            <div className="flex flex-col md:flex-row gap-4 mb-8">
+                            <div className="flex flex-col md:flex-row gap-3 mb-7">
                                 <div className="relative flex-1">
-                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
+                                    <Search size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                                     <input
                                         type="text"
-                                        placeholder="Search problems..."
+                                        placeholder="Search problems…"
                                         value={searchQuery}
                                         onChange={e => setSearchQuery(e.target.value)}
-                                        className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 rounded-2xl text-xs font-bold outline-none focus:ring-2 ring-indigo-500/20 dark:text-white transition-all placeholder-slate-400"
+                                        className="w-full pl-10 pr-4 py-2.5 rounded-xl text-xs font-bold outline-none transition-all dark:text-white placeholder-slate-400"
+                                        style={{
+                                            background: "var(--input-bg, rgba(0,0,0,0.04))",
+                                            border: "1px solid var(--input-border, rgba(0,0,0,0.08))",
+                                        }}
                                     />
                                 </div>
-                                <select
-                                    value={difficultyFilter}
-                                    onChange={e => setDifficultyFilter(e.target.value)}
-                                    className="px-4 py-3 bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 rounded-2xl text-xs font-black outline-none cursor-pointer dark:text-white"
-                                >
-                                    <option value="All">All Difficulty</option>
-                                    <option value="Easy">Easy</option>
-                                    <option value="Medium">Medium</option>
-                                    <option value="Hard">Hard</option>
-                                </select>
-                                <select
-                                    value={topicFilter}
-                                    onChange={e => setTopicFilter(e.target.value)}
-                                    className="px-4 py-3 bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 rounded-2xl text-xs font-black outline-none cursor-pointer dark:text-white"
-                                >
-                                    {allTopics.map(t => <option key={t} value={t}>{t}</option>)}
-                                </select>
+                                {[
+                                    { val: difficultyFilter, set: setDifficultyFilter, opts: ["All", "Easy", "Medium", "Hard"] },
+                                    { val: topicFilter, set: setTopicFilter, opts: allTopics },
+                                ].map((sel, i) => (
+                                    <select key={i}
+                                        value={sel.val}
+                                        onChange={e => sel.set(e.target.value)}
+                                        className="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider outline-none cursor-pointer dark:text-white transition-all"
+                                        style={{
+                                            background: "var(--input-bg, rgba(0,0,0,0.04))",
+                                            border: "1px solid var(--input-border, rgba(0,0,0,0.08))",
+                                            color: "var(--pill-text, #64748b)",
+                                        }}>
+                                        {sel.opts.map(o => <option key={o} value={o}>{o}</option>)}
+                                    </select>
+                                ))}
                             </div>
 
-                            {/* Stats Row */}
-                            <div className="flex items-center gap-6 mb-6 px-2">
-                                <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">{filteredQuestions.length} results</span>
+                            {/* Meta row */}
+                            <div className="flex items-center gap-4 mb-5 px-1">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{filtered.length} results</span>
                                 {bookmarkedQuestions.length > 0 && (
-                                    <button
-                                        onClick={() => setTopicFilter("All")}
-                                        className="flex items-center gap-1.5 text-[11px] font-black text-rose-500 hover:text-rose-600 transition-colors"
-                                    >
-                                        <Bookmark size={12} /> {bookmarkedQuestions.length} bookmarked
-                                    </button>
+                                    <span className="flex items-center gap-1 text-[10px] font-black text-rose-500">
+                                        <Bookmark size={11} /> {bookmarkedQuestions.length} bookmarked
+                                    </span>
                                 )}
                                 <button
                                     onClick={() => { setSearchQuery(""); setDifficultyFilter("All"); setTopicFilter("All"); }}
-                                    className="ml-auto text-[11px] font-bold text-slate-400 hover:text-indigo-500 transition-colors"
-                                >
+                                    className="ml-auto text-[10px] font-bold text-slate-400 hover:text-indigo-500 transition-colors">
                                     Clear filters
                                 </button>
                             </div>
 
-                            {/* Question List */}
-                            <div className="space-y-3">
+                            {/* Questions */}
+                            <div className="space-y-2.5">
                                 <AnimatePresence mode="popLayout">
-                                    {filteredQuestions.map((q, i) => (
+                                    {filtered.map(q => (
                                         <QuestionRow
-                                            key={q.title}
-                                            q={q}
+                                            key={q.title} q={q}
                                             isSolved={solvedQuestions.includes(q.title)}
                                             onToggle={toggleSolved}
                                             isBookmarked={bookmarkedQuestions.includes(q.title)}
@@ -488,11 +542,11 @@ export default function CompanyDetails({ company, onBack }) {
                                         />
                                     ))}
                                 </AnimatePresence>
-
-                                {filteredQuestions.length === 0 && (
-                                    <div className="text-center py-20 rounded-[32px] bg-slate-50 dark:bg-white/5 border border-dashed border-slate-200 dark:border-white/10">
-                                        <XCircle size={32} className="text-slate-300 dark:text-white/20 mx-auto mb-3" />
-                                        <p className="text-slate-400 dark:text-white/30 font-black uppercase tracking-widest text-xs">No questions match your filters</p>
+                                {filtered.length === 0 && (
+                                    <div className="text-center py-16 rounded-[24px]"
+                                        style={{ background: "rgba(0,0,0,0.02)", border: "2px dashed rgba(0,0,0,0.07)" }}>
+                                        <XCircle size={28} className="text-slate-300 dark:text-white/15 mx-auto mb-3" />
+                                        <p className="text-slate-400 dark:text-white/25 font-black uppercase tracking-widest text-xs">No questions match</p>
                                     </div>
                                 )}
                             </div>
@@ -500,63 +554,72 @@ export default function CompanyDetails({ company, onBack }) {
                     </motion.div>
                 )}
 
-                {/* ══ INTERVIEW PROCESS TAB ══ */}
+                {/* INTERVIEW PROCESS */}
                 {activeTab === "process" && (
-                    <motion.div key="process" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                        className="grid grid-cols-1 lg:grid-cols-2 gap-8"
-                    >
+                    <motion.div key="process"
+                        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                        className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
                         {/* Timeline */}
-                        <div className="bg-white dark:bg-white/[0.03] rounded-[40px] border border-slate-100 dark:border-white/5 p-10 shadow-sm">
-                            <h3 className="text-xl font-black dark:text-white text-slate-800 mb-8 flex items-center gap-3">
-                                <GitBranch className="text-indigo-500" size={22} /> Interview Rounds
+                        <div className="rounded-[32px] p-8"
+                            style={{ background: "var(--card-bg, #fff)", border: "1px solid var(--card-border, rgba(0,0,0,0.07))", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
+                            <h3 className="text-lg font-black text-slate-800 dark:text-white mb-7 flex items-center gap-2.5">
+                                <GitBranch size={18} style={{ color: "#6366f1" }} /> Interview Rounds
                             </h3>
                             {(company.interviewProcess || [
                                 { name: "Online Assessment", description: "2 LeetCode-style problems + MCQs", duration: "90 min" },
                                 { name: "Technical Round 1", description: "DSA & Problem Solving", duration: "60 min" },
                                 { name: "Technical Round 2", description: "System Design & CS Fundamentals", duration: "60 min" },
-                                { name: "HR Round", description: "Culture fit & compensation discussion", duration: "30–45 min" },
+                                { name: "HR Round", description: "Culture fit & compensation", duration: "30–45 min" },
                             ]).map((step, i, arr) => (
                                 <TimelineStep key={i} step={step} index={i} total={arr.length} />
                             ))}
                         </div>
 
-                        {/* Tips + Requirements */}
-                        <div className="space-y-6">
-                            <div className="bg-indigo-600 rounded-[40px] p-10 text-white relative overflow-hidden shadow-2xl">
-                                <div className="absolute -right-12 -top-12 w-48 h-48 bg-white/5 rounded-full" />
-                                <h3 className="text-xl font-black mb-6 flex items-center gap-3"><BrainCircuit size={22} /> AI Strategy</h3>
-                                <div className="space-y-3 relative z-10">
-                                    <div className="bg-white/10 p-5 rounded-2xl border border-white/10">
-                                        <p className="text-sm font-bold leading-relaxed">
-                                            {company.difficultySplit?.hard > 30
+                        <div className="space-y-5">
+                            {/* AI Strategy */}
+                            <div className="rounded-[32px] p-8 relative overflow-hidden"
+                                style={{ background: "linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%)" }}>
+                                <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-white/5" />
+                                <h3 className="text-lg font-black text-white mb-5 flex items-center gap-2.5 relative z-10">
+                                    <BrainCircuit size={18} /> AI Strategy
+                                </h3>
+                                <div className="space-y-2.5 relative z-10">
+                                    <div className="p-4 rounded-2xl" style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                                        <p className="text-sm font-bold text-white/90 leading-relaxed">
+                                            {(company.difficultySplit?.hard || 0) > 30
                                                 ? "⚠️ High Hard ratio — master DP, Graphs & Advanced Trees before applying."
                                                 : "🚀 Medium-heavy — nail time complexity first. Most rejections happen here."}
                                         </p>
                                     </div>
-                                    {(company.insights || []).slice(0, 3).map((insight, i) => (
-                                        <div key={i} className="flex gap-3 items-start bg-white/5 p-4 rounded-2xl border border-white/5">
-                                            <div className="w-5 h-5 rounded-full bg-white text-indigo-600 flex items-center justify-center text-[9px] font-black shrink-0 mt-0.5">{i + 1}</div>
-                                            <p className="text-xs font-semibold leading-relaxed">{insight}</p>
+                                    {(company.insights || []).slice(0, 3).map((ins, i) => (
+                                        <div key={i} className="flex gap-3 items-start p-3.5 rounded-2xl"
+                                            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                                            <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center text-[8px] font-black shrink-0 mt-0.5"
+                                                style={{ color: "#4f46e5" }}>{i + 1}</div>
+                                            <p className="text-xs font-semibold text-white/80 leading-relaxed">{ins}</p>
                                         </div>
                                     ))}
                                 </div>
                             </div>
 
-                            {/* Requirements */}
-                            <div className="bg-white dark:bg-white/[0.03] rounded-[40px] border border-slate-100 dark:border-white/5 p-8 shadow-sm">
-                                <h3 className="text-base font-black dark:text-white text-slate-800 mb-5 flex items-center gap-2">
-                                    <Shield size={18} className="text-indigo-500" /> What They Look For
+                            {/* What they look for */}
+                            <div className="rounded-[32px] p-7"
+                                style={{ background: "var(--card-bg, #fff)", border: "1px solid var(--card-border, rgba(0,0,0,0.07))" }}>
+                                <h3 className="text-sm font-black text-slate-800 dark:text-white mb-5 flex items-center gap-2">
+                                    <Shield size={15} style={{ color: "#6366f1" }} /> What They Look For
                                 </h3>
                                 <div className="space-y-2">
                                     {(company.requirements || [
                                         "Strong DSA fundamentals",
                                         "Clean code & communication",
-                                        "CS core knowledge (OS, DBMS, CN)",
+                                        "CS core (OS, DBMS, CN)",
                                         "Prior projects or internships",
                                     ]).map((req, i) => (
-                                        <div key={i} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-white/5 rounded-2xl">
-                                            <CheckCircle2 size={15} className="text-indigo-500 shrink-0" />
-                                            <span className="text-xs font-semibold dark:text-white/70 text-slate-600">{req}</span>
+                                        <div key={i} className="flex items-center gap-3 p-3 rounded-xl"
+                                            style={{ background: "var(--row-bg, rgba(0,0,0,0.03))" }}>
+                                            <CheckCircle2 size={13} style={{ color: "#6366f1" }} className="shrink-0" />
+                                            <span className="text-xs font-semibold text-slate-600 dark:text-white/60">{req}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -565,110 +628,125 @@ export default function CompanyDetails({ company, onBack }) {
                     </motion.div>
                 )}
 
-                {/* ══ TOPIC INTEL TAB ══ */}
+                {/* TOPIC INTEL */}
                 {activeTab === "intel" && (
-                    <motion.div key="intel" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                        className="grid grid-cols-1 lg:grid-cols-2 gap-8"
-                    >
-                        {/* Topic Frequency */}
-                        <div className="bg-white dark:bg-white/[0.03] rounded-[40px] border border-slate-100 dark:border-white/5 p-10 shadow-sm">
-                            <h3 className="text-xl font-black dark:text-white text-slate-800 mb-8 flex items-center gap-3">
-                                <BarChart3 className="text-indigo-500" size={22} /> Topic Frequency
+                    <motion.div key="intel"
+                        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                        className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                        {/* Topic frequency */}
+                        <div className="rounded-[32px] p-8"
+                            style={{ background: "var(--card-bg, #fff)", border: "1px solid var(--card-border, rgba(0,0,0,0.07))", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
+                            <h3 className="text-lg font-black text-slate-800 dark:text-white mb-7 flex items-center gap-2.5">
+                                <BarChart3 size={18} style={{ color: "#6366f1" }} /> Topic Frequency
                             </h3>
-                            <div className="grid gap-3">
-                                {(company.topicFrequency || []).map((topic, i) => (
-                                    <TopicChip key={topic.name} name={topic.name} value={topic.value} rank={i} />
+                            <div className="grid gap-2.5">
+                                {(company.topicFrequency || []).map((t, i) => (
+                                    <TopicChip key={t.name} name={t.name} value={t.value} rank={i} />
                                 ))}
                             </div>
                         </div>
 
-                        {/* Recommended Resources */}
-                        <div className="space-y-6">
-                            <div className="bg-white dark:bg-white/[0.03] rounded-[40px] border border-slate-100 dark:border-white/5 p-10 shadow-sm">
-                                <h3 className="text-xl font-black dark:text-white text-slate-800 mb-8 flex items-center gap-3">
-                                    <BookOpen className="text-indigo-500" size={22} /> Study Roadmap
+                        <div className="space-y-5">
+                            {/* Study Roadmap */}
+                            <div className="rounded-[32px] p-8"
+                                style={{ background: "var(--card-bg, #fff)", border: "1px solid var(--card-border, rgba(0,0,0,0.07))" }}>
+                                <h3 className="text-lg font-black text-slate-800 dark:text-white mb-6 flex items-center gap-2.5">
+                                    <BookOpen size={18} style={{ color: "#6366f1" }} /> Study Roadmap
                                 </h3>
-                                <div className="space-y-3">
+                                <div className="space-y-2.5">
                                     {(company.studyPlan || [
                                         { week: "Week 1–2", focus: "Arrays, Strings & Hashing", priority: "Critical" },
                                         { week: "Week 3–4", focus: "Trees, Graphs & BFS/DFS", priority: "High" },
                                         { week: "Week 5", focus: "Dynamic Programming Patterns", priority: "High" },
                                         { week: "Week 6", focus: "System Design Basics", priority: "Medium" },
                                     ]).map((item, i) => (
-                                        <div key={i} className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-white/5 rounded-2xl">
-                                            <div className="text-center shrink-0">
-                                                <p className="text-[9px] font-black text-indigo-500 uppercase tracking-wider">{item.week}</p>
+                                        <div key={i} className="flex items-center gap-4 p-3.5 rounded-2xl"
+                                            style={{ background: "var(--row-bg, rgba(0,0,0,0.03))" }}>
+                                            <div className="shrink-0 min-w-[72px]">
+                                                <p className="text-[9px] font-black uppercase tracking-wider" style={{ color: "#6366f1" }}>{item.week}</p>
                                             </div>
-                                            <div className="flex-1">
-                                                <p className="text-xs font-black dark:text-white text-slate-700">{item.focus}</p>
-                                            </div>
-                                            <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-lg ${item.priority === "Critical" ? "bg-rose-500/10 text-rose-500" :
-                                                    item.priority === "High" ? "bg-amber-500/10 text-amber-500" :
-                                                        "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-white/30"
-                                                }`}>{item.priority}</span>
+                                            <p className="flex-1 text-xs font-black text-slate-700 dark:text-white">{item.focus}</p>
+                                            <span className="text-[8px] font-black uppercase px-2 py-1 rounded-lg whitespace-nowrap"
+                                                style={item.priority === "Critical"
+                                                    ? { background: "rgba(244,63,94,0.1)", color: "#f43f5e" }
+                                                    : item.priority === "High"
+                                                        ? { background: "rgba(245,158,11,0.1)", color: "#f59e0b" }
+                                                        : { background: "rgba(0,0,0,0.05)", color: "#94a3b8" }}>
+                                                {item.priority}
+                                            </span>
                                         </div>
                                     ))}
                                 </div>
                             </div>
 
-                            {/* Difficulty Split Detail */}
-                            <div className="bg-white dark:bg-white/[0.03] rounded-[40px] border border-slate-100 dark:border-white/5 p-8 shadow-sm">
-                                <h3 className="text-base font-black dark:text-white text-slate-800 mb-6">Difficulty Mix</h3>
-                                <div className="space-y-5">
-                                    <DifficultyBar label="Easy" percent={company.difficultySplit?.easy} count={easyCount} color="bg-emerald-500" />
-                                    <DifficultyBar label="Medium" percent={company.difficultySplit?.medium} count={medCount} color="bg-amber-500" />
-                                    <DifficultyBar label="Hard" percent={company.difficultySplit?.hard} count={hardCount} color="bg-rose-500" />
+                            {/* Difficulty Mix */}
+                            <div className="rounded-[32px] p-7"
+                                style={{ background: "var(--card-bg, #fff)", border: "1px solid var(--card-border, rgba(0,0,0,0.07))" }}>
+                                <h3 className="text-sm font-black text-slate-800 dark:text-white mb-5">Difficulty Mix</h3>
+                                <div className="space-y-4">
+                                    <DiffBar label="Easy" percent={company.difficultySplit?.easy} count={easyCount} color="#10b981" />
+                                    <DiffBar label="Medium" percent={company.difficultySplit?.medium} count={medCount} color="#f59e0b" />
+                                    <DiffBar label="Hard" percent={company.difficultySplit?.hard} count={hardCount} color="#f43f5e" />
                                 </div>
                             </div>
                         </div>
                     </motion.div>
                 )}
 
-                {/* ══ EXPERIENCES TAB ══ */}
+                {/* EXPERIENCES */}
                 {activeTab === "experiences" && (
-                    <motion.div key="experiences" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div className="bg-white dark:bg-white/[0.03] rounded-[40px] border border-slate-100 dark:border-white/5 p-10 shadow-sm">
-                                <h3 className="text-xl font-black dark:text-white text-slate-800 mb-8 flex items-center gap-3">
-                                    <MessageSquare className="text-indigo-500" size={22} /> Candidate Experiences
+                    <motion.div key="experiences"
+                        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Experiences */}
+                            <div className="rounded-[32px] p-8"
+                                style={{ background: "var(--card-bg, #fff)", border: "1px solid var(--card-border, rgba(0,0,0,0.07))", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
+                                <h3 className="text-lg font-black text-slate-800 dark:text-white mb-6 flex items-center gap-2.5">
+                                    <MessageSquare size={18} style={{ color: "#6366f1" }} /> Candidate Experiences
                                 </h3>
                                 <div className="space-y-3">
                                     {(company.experiences || [
-                                        { text: "The interviewers were helpful and gave hints when stuck. Great experience overall.", sentiment: "Positive" },
+                                        { text: "The interviewers were helpful and gave hints when stuck.", sentiment: "Positive" },
                                         { text: "OA was straightforward but the technical round had a surprise system design question.", sentiment: "Neutral" },
-                                        { text: "The process was long — 5 rounds over 2 weeks. Be prepared for the wait.", sentiment: "Neutral" },
-                                        { text: "Great company culture and the HR was very transparent about the offer timeline.", sentiment: "Positive" },
-                                    ]).map((exp, i) => (
-                                        <ExperienceBadge key={i} exp={exp} />
-                                    ))}
+                                        { text: "Process was long — 5 rounds over 2 weeks. Be prepared.", sentiment: "Neutral" },
+                                        { text: "Great culture and HR was transparent about the offer timeline.", sentiment: "Positive" },
+                                    ]).map((exp, i) => <ExpBadge key={i} exp={exp} />)}
                                 </div>
                             </div>
 
-                            {/* Interview Stats */}
-                            <div className="space-y-6">
-                                <div className="bg-white dark:bg-white/[0.03] rounded-[40px] border border-slate-100 dark:border-white/5 p-10 shadow-sm">
-                                    <h3 className="text-xl font-black dark:text-white text-slate-800 mb-8 flex items-center gap-3">
-                                        <Trophy className="text-amber-500" size={22} /> Offer Stats
+                            <div className="space-y-5">
+                                {/* Offer Stats */}
+                                <div className="rounded-[32px] p-8"
+                                    style={{ background: "var(--card-bg, #fff)", border: "1px solid var(--card-border, rgba(0,0,0,0.07))" }}>
+                                    <h3 className="text-lg font-black text-slate-800 dark:text-white mb-6 flex items-center gap-2.5">
+                                        <Trophy size={18} style={{ color: "#f59e0b" }} /> Offer Stats
                                     </h3>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-2 gap-3">
                                         {[
-                                            { label: "Offer Rate", value: company.acceptance, icon: <Award size={18} className="text-amber-500" /> },
-                                            { label: "Avg. CTC", value: company.salary, icon: <Briefcase size={18} className="text-emerald-500" /> },
-                                            { label: "Avg. Rounds", value: company.rounds, icon: <Target size={18} className="text-indigo-500" /> },
-                                            { label: "Process Days", value: company.processDays || "14–21", icon: <Calendar size={18} className="text-rose-500" /> },
+                                            { label: "Offer Rate", value: company.acceptance, icon: <Award size={16} />, color: "#f59e0b" },
+                                            { label: "Avg. CTC", value: company.salary, icon: <Briefcase size={16} />, color: "#10b981" },
+                                            { label: "Avg. Rounds", value: company.rounds, icon: <Target size={16} />, color: "#6366f1" },
+                                            { label: "Process Days", value: company.processDays || "14–21", icon: <Calendar size={16} />, color: "#f43f5e" },
                                         ].map(s => (
-                                            <div key={s.label} className="p-5 bg-slate-50 dark:bg-white/5 rounded-2xl">
-                                                {s.icon}
-                                                <p className="text-2xl font-black dark:text-white text-slate-800 mt-2">{s.value}</p>
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mt-0.5">{s.label}</p>
+                                            <div key={s.label} className="p-4 rounded-2xl"
+                                                style={{ background: "var(--row-bg, rgba(0,0,0,0.03))" }}>
+                                                {React.cloneElement(s.icon, { color: s.color })}
+                                                <p className="text-2xl font-black text-slate-800 dark:text-white mt-2">{s.value}</p>
+                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider mt-0.5">{s.label}</p>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
 
-                                <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/10 rounded-[40px] border border-amber-200/50 dark:border-amber-500/20 p-8">
-                                    <h3 className="text-base font-black text-amber-800 dark:text-amber-400 mb-4 flex items-center gap-2">
-                                        <AlertTriangle size={16} /> Common Pitfalls
+                                {/* Pitfalls */}
+                                <div className="rounded-[32px] p-7"
+                                    style={{
+                                        background: "linear-gradient(135deg,rgba(245,158,11,0.06),rgba(249,115,22,0.04))",
+                                        border: "1px solid rgba(245,158,11,0.2)"
+                                    }}>
+                                    <h3 className="text-sm font-black text-amber-700 dark:text-amber-400 mb-4 flex items-center gap-2">
+                                        <AlertTriangle size={14} /> Common Pitfalls
                                     </h3>
                                     <div className="space-y-2">
                                         {(company.pitfalls || [
@@ -677,7 +755,7 @@ export default function CompanyDetails({ company, onBack }) {
                                             "Not asking clarifying questions upfront",
                                         ]).map((p, i) => (
                                             <div key={i} className="flex gap-2 items-start text-xs text-amber-700 dark:text-amber-400/80 font-semibold">
-                                                <ChevronRight size={14} className="shrink-0 mt-0.5" /> {p}
+                                                <ChevronRight size={13} className="shrink-0 mt-0.5" /> {p}
                                             </div>
                                         ))}
                                     </div>
