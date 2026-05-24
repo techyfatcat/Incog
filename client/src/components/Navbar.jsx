@@ -141,11 +141,12 @@ export default function Navbar() {
                             e.preventDefault();
                             const token = localStorage.getItem("token");
                             if (!token) {
-                                window.location.href = "/auth";
+                                window.location.href = "/api/auth";
                                 return;
                             }
                             // Set cookie via Express, then redirect to /groups
-                            window.location.href = `/api/auth/set-cookie?token=${token}&redirect=/groups`;
+                            window.location.href =
+                                `${import.meta.env.VITE_API_URL}/api/auth/set-cookie?token=${token}&redirect=/groups`;
                         }}
                         className="px-5 py-2 rounded-full text-[13px] font-semibold transition-all text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
                     >
@@ -164,10 +165,10 @@ export default function Navbar() {
 
                     {!isLoggedIn ? (
                         <div className="hidden md:flex items-center gap-4">
-                            <Link to="/auth" className="text-slate-900 dark:text-white text-[13px] font-bold hover:opacity-70">
+                            <Link to="/api/auth" className="text-slate-900 dark:text-white text-[13px] font-bold hover:opacity-70">
                                 Login
                             </Link>
-                            <Link to="/auth" className="bg-slate-900 dark:bg-white text-white dark:text-black px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg">
+                            <Link to="/api/auth" className="bg-slate-900 dark:bg-white text-white dark:text-black px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg">
                                 Get Started
                             </Link>
                         </div>
@@ -255,7 +256,7 @@ export default function Navbar() {
                                 e.preventDefault();
                                 const token = localStorage.getItem("token");
                                 if (!token) {
-                                    window.location.href = "/auth";
+                                    window.location.href = "/api/auth";
                                     return;
                                 }
                                 // Set cookie via Express, then redirect to /groups

@@ -6,7 +6,7 @@ const ProtectedRoute = () => {
 
     // If there is no token, redirect to the auth page
     if (!token) {
-        return <Navigate to="/auth" replace />;
+        return <Navigate to="/api/auth" replace />;
     }
 
     // If the token exists, render the child routes (the "Outlet")

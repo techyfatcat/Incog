@@ -67,7 +67,7 @@ export default function Auth() {
             setIsLoading(true);
             setOtpError("");
             // UPDATED: Using 'api' instance and relative path
-            await api.post('/auth/send-otp', { email: formData.email });
+            await api.post('/api/auth/send-otp', { email: formData.email });
             setGeneratedOtp(true);
             setOtpTimer(60);
         } catch (error) {
@@ -89,7 +89,7 @@ export default function Auth() {
             setIsLoading(true);
             setOtpError("");
             // UPDATED: Using 'api' instance
-            await api.post('/auth/verify-otp', {
+            await api.post('/api/auth/verify-otp', {
                 email: formData.email,
                 otp: otpCode
             });
@@ -111,7 +111,7 @@ export default function Auth() {
 
         try {
             // UPDATED: Logic to hit /auth/login or /auth/register via 'api'
-            const endpoint = isLogin ? '/auth/login' : '/auth/register';
+            const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
             const payload = isLogin
                 ? { email: formData.email, password: formData.password }
                 : { ...formData, otp: otpDigits.join("") };

@@ -123,7 +123,7 @@ export default function Home() {
 
     const handleNavigation = (path) => {
         if (isLoggedIn) navigate(path);
-        else navigate('/auth');
+        else navigate('/api/auth');
     };
 
     useEffect(() => {
