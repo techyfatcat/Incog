@@ -4,7 +4,7 @@ import { RefreshCw, Edit2, FileText, MessageSquare, Bookmark, Heart, Check, X, T
 import api from '../utils/api';
 import { deletePost } from '../services/postsService';
 
-const AVATAR_API = "http://localhost:5000/api/avatar";
+const AVATAR_API = `${import.meta.env.VITE_API_URL}/avatar`;
 
 // Reusable Production-Level Confirm Modal
 const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => (

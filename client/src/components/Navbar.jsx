@@ -44,7 +44,7 @@ export default function Navbar() {
 
         const fetchUser = async () => {
             try {
-                const res = await fetch("http://localhost:5000/api/auth/me", {
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/me`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -86,7 +86,7 @@ export default function Navbar() {
         { name: "Resources", path: "/resources" },
     ];
 
-    const AVATAR_API = "http://localhost:5000/api/avatar";
+    const AVATAR_API = `${import.meta.env.VITE_API_URL}/avatar`;
 
     return (
         <motion.nav

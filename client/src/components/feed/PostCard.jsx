@@ -165,7 +165,7 @@ const PostCard = ({ post, searchQuery, onVote, onDelete, onReport, isFullView = 
                                     <img
                                         src={post.isAnonymous
                                             ? "/incognito-avatar.png"
-                                            : `http://localhost:5000/api/avatar/${post.author?.avatarSeed || post.author?._id}`}
+                                            : `${import.meta.env.VITE_API_URL}/avatar/${post.author?.avatarSeed || post.author?._id}`}
                                         alt="avatar"
                                         className="w-10 h-10 rounded-full object-cover border-2 border-gray-100 dark:border-white/10 p-[1px]"
                                     />

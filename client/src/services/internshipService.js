@@ -1,5 +1,5 @@
 const API =
-    "http://localhost:5000/api/internships";
+    `${import.meta.env.VITE_API_URL}/internships`;
 
 export const fetchInternships =
     async () => {
