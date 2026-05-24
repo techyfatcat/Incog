@@ -40,7 +40,7 @@ export default function ProductionProfile() {
 
     const fetchProfileData = async () => {
         try {
-            const res = await api.get('/profile/me');
+            const res = await api.get('/api/profile/me');
             const data = {
                 profile: {
                     username: res.data.username,
@@ -59,7 +59,7 @@ export default function ProductionProfile() {
             // Fetch Posts and Comments in parallel
             const [postsRes, commentsRes] = await Promise.all([
                 api.get(`/api/posts/user/${res.data._id}`),
-                api.get(`/profile/comments`) // Assuming backend has a route for user's own comments
+                api.get(`/api/profile/comments`) // Assuming backend has a route for user's own comments
             ]);
 
             setPosts(postsRes.data);
@@ -75,7 +75,7 @@ export default function ProductionProfile() {
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            const res = await api.put('/profile/me', {
+            const res = await api.put('/api/profile/me', {
                 username: userData.profile.username,
                 bio: userData.profile.bio,
                 avatarSeed: userData.profile.avatarSeed
