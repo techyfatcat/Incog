@@ -44,7 +44,7 @@ export default function Navbar() {
 
         const fetchUser = async () => {
             try {
-                const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/me`, {
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -141,7 +141,7 @@ export default function Navbar() {
                             e.preventDefault();
                             const token = localStorage.getItem("token");
                             if (!token) {
-                                window.location.href = "/api/auth";
+                                window.location.href = "/auth";
                                 return;
                             }
                             // Set cookie via Express, then redirect to /groups
@@ -165,10 +165,10 @@ export default function Navbar() {
 
                     {!isLoggedIn ? (
                         <div className="hidden md:flex items-center gap-4">
-                            <Link to="/api/auth" className="text-slate-900 dark:text-white text-[13px] font-bold hover:opacity-70">
+                            <Link to="/auth" className="text-slate-900 dark:text-white text-[13px] font-bold hover:opacity-70">
                                 Login
                             </Link>
-                            <Link to="/api/auth" className="bg-slate-900 dark:bg-white text-white dark:text-black px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg">
+                            <Link to="/auth" className="bg-slate-900 dark:bg-white text-white dark:text-black px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg">
                                 Get Started
                             </Link>
                         </div>
