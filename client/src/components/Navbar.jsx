@@ -139,14 +139,18 @@ export default function Navbar() {
                         href="#"
                         onClick={(e) => {
                             e.preventDefault();
+
                             const token = localStorage.getItem("token");
+
                             if (!token) {
                                 window.location.href = "/auth";
                                 return;
                             }
-                            // Set cookie via Express, then redirect to /groups
-                            window.location.href =
-                                `${import.meta.env.VITE_API_URL}/api/auth/set-cookie?token=${token}&redirect=/groups`;
+
+                            window.open(
+                                `${import.meta.env.VITE_API_URL}/api/auth/set-cookie?token=${token}&redirect=/groups`,
+                                "_blank"
+                            );
                         }}
                         className="px-5 py-2 rounded-full text-[13px] font-semibold transition-all text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
                     >
