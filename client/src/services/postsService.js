@@ -7,7 +7,7 @@ import api from '../utils/api'; // Your Axios instance with interceptors
 export const getAllPosts = async (params = {}) => {
     try {
         // params: { search, types, sort, page, limit }
-        const response = await api.get('/posts', { params });
+        const response = await api.get('/api/posts', { params });
 
         // Logic: Return the array of posts directly
         // Matches res.json(posts) in your controller
@@ -24,7 +24,7 @@ export const getAllPosts = async (params = {}) => {
 export const createNewPost = async (postData) => {
     try {
         // postData: { title, content, postType, image, isAnonymous }
-        const response = await api.post('/posts/create', postData);
+        const response = await api.post('/api/posts/create', postData);
         return response.data;
     } catch (error) {
         console.error("Error creating post on server:", error);
@@ -39,7 +39,7 @@ export const createNewPost = async (postData) => {
 export const votePost = async (postId, voteType) => {
     try {
         // voteType: 'up' or 'down'
-        const response = await api.patch(`/posts/${postId}/vote`, { voteType });
+        const response = await api.patch(`/api/posts/${postId}/vote`, { voteType });
         return response.data;
     } catch (error) {
         console.error("Voting failed:", error);
@@ -52,7 +52,7 @@ export const votePost = async (postId, voteType) => {
  */
 export const deletePost = async (postId) => {
     try {
-        const response = await api.delete(`/posts/${postId}`);
+        const response = await api.delete(`/api/posts/${postId}`);
         return response.data;
     } catch (error) {
         console.error("Error deleting post:", error);

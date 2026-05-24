@@ -66,7 +66,7 @@ export default function PostDetailPage() {
 
     const fetchPost = async () => {
         try {
-            const res = await api.get(`/posts/${id}`);
+            const res = await api.get(`/api/posts/${id}`);
             setPost(res.data);
         } catch {
             navigate('/community');
@@ -82,7 +82,7 @@ export default function PostDetailPage() {
                 text: commentText,
                 parentId: replyingTo?._id || null
             };
-            const res = await api.post(`/posts/${id}/comment`, payload);
+            const res = await api.post(`/api/posts/${id}/comment`, payload);
             setPost(res.data);
             setCommentText("");
             setReplyingTo(null);
@@ -96,7 +96,7 @@ export default function PostDetailPage() {
     // ✅ FIX: toggleCommentLike now returns full post, update accordingly
     const handleLikeComment = async (commentId) => {
         try {
-            const res = await api.post(`/posts/${id}/comment/${commentId}/like`);
+            const res = await api.post(`/api/posts/${id}/comment/${commentId}/like`);
             // Backend returns { likes } — patch only that comment optimistically
             setPost(prev => ({
                 ...prev,
@@ -111,7 +111,7 @@ export default function PostDetailPage() {
 
     const confirmDelete = async () => {
         try {
-            const res = await api.delete(`/posts/${id}/comment/${deleteId}`);
+            const res = await api.delete(`/api/posts/${id}/comment/${deleteId}`);
             setPost(res.data);
             setDeleteId(null);
         } catch {
@@ -176,7 +176,7 @@ export default function PostDetailPage() {
                     }}
                     onReport={async (postId, reason) => {
                         try {
-                            await api.post(`/posts/${postId}/report`, { reason });
+                            await api.post(`/api/posts/${postId}/report`, { reason });
                             return { success: true };
                         } catch {
                             return { success: false };

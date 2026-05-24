@@ -86,7 +86,7 @@ export default function Navbar() {
         { name: "Resources", path: "/resources" },
     ];
 
-    const AVATAR_API = `${import.meta.env.VITE_API_URL}/avatar`;
+    const AVATAR_API = `${import.meta.env.VITE_API_URL}/api/avatar`;
 
     return (
         <motion.nav

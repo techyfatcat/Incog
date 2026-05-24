@@ -198,7 +198,7 @@ export default function Home() {
                             <div className="flex -space-x-3">
                                 {[1, 2, 3, 4].map((i) => (
                                     <div key={i} className="w-8 h-8 rounded-full border-2 border-white dark:border-[#080B16] bg-slate-200 overflow-hidden shadow-sm">
-                                        <img src={`${import.meta.env.VITE_API_URL}/avatar/${i + 10}`} alt="" />
+                                        <img src={`${import.meta.env.VITE_API_URL}/api/avatar/${i + 10}`} alt="" />
                                     </div>
                                 ))}
                             </div>

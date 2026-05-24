@@ -10,7 +10,7 @@ const getAvatarUrl = (seed) => {
     // Falls back to Dicebear if your custom avatar API isn't set
     const apiBase = import.meta.env.VITE_API_URL;
     return apiBase
-        ? `${apiBase}/avatar/${seed}`
+        ? `${apiBase}/api/avatar/${seed}`
         : `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}`;
 };
 
