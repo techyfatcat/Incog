@@ -20,6 +20,7 @@ const DIFF_COLOR = {
 
 export default function CompanyCard({ company, onClick, solvedCount = 0 }) {
     const [hovered, setHovered] = useState(false);
+
     const tier = TIER_CONFIG[company.tier] || TIER_CONFIG["Enterprise Tech"];
     const diffColor = DIFF_COLOR[company.difficulty] || "#f59e0b";
     const totalQ = company.questionCount || company.questions?.length || 0;
@@ -34,17 +35,21 @@ export default function CompanyCard({ company, onClick, solvedCount = 0 }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            whileHover={{ y: -5 }}
+            whileHover={{ y: -4 }}
             transition={{ type: "spring", stiffness: 280, damping: 22 }}
             onHoverStart={() => setHovered(true)}
             onHoverEnd={() => setHovered(false)}
             onClick={() => onClick(company)}
-            className="group relative cursor-pointer rounded-[28px] overflow-hidden bg-white dark:bg-white/[0.04] border border-slate-100 dark:border-white/[0.07] shadow-sm"
+            className="group relative cursor-pointer rounded-[24px] overflow-hidden
+                       bg-white dark:bg-[#13131f]
+                       border border-slate-200 dark:border-white/[0.08]
+                       shadow-sm hover:shadow-lg dark:hover:shadow-black/40
+                       transition-shadow duration-300"
         >
             {/* Hover glow */}
             <div
-                className="absolute inset-0 pointer-events-none rounded-[28px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                style={{ background: `radial-gradient(ellipse at 30% 0%, rgba(${tier.glow},0.07) 0%, transparent 65%)` }}
+                className="absolute inset-0 pointer-events-none rounded-[24px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                style={{ background: `radial-gradient(ellipse at 30% 0%, rgba(${tier.glow},0.08) 0%, transparent 65%)` }}
             />
 
             {/* Difficulty strip */}
@@ -57,12 +62,13 @@ export default function CompanyCard({ company, onClick, solvedCount = 0 }) {
             <div className="p-5">
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
+                    {/* Logo */}
                     <div className="relative">
                         <div
                             className="w-12 h-12 rounded-2xl overflow-hidden flex items-center justify-center p-2"
                             style={{
                                 background: `rgba(${tier.glow},0.08)`,
-                                border: `1px solid rgba(${tier.glow},0.18)`,
+                                border: `1px solid rgba(${tier.glow},0.2)`,
                             }}
                         >
                             <img
@@ -73,16 +79,17 @@ export default function CompanyCard({ company, onClick, solvedCount = 0 }) {
                             />
                         </div>
                         {company.isHiring && (
-                            <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-400 border-2 border-white dark:border-slate-900 animate-pulse" />
+                            <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-400 border-2 border-white dark:border-[#13131f] animate-pulse" />
                         )}
                     </div>
 
+                    {/* Badges */}
                     <div className="flex flex-col items-end gap-1.5">
                         <span
                             className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg"
                             style={{
-                                background: `rgba(${tier.glow},0.1)`,
-                                border: `1px solid rgba(${tier.glow},0.25)`,
+                                background: `rgba(${tier.glow},0.12)`,
+                                border: `1px solid rgba(${tier.glow},0.28)`,
                                 color: tier.color,
                             }}
                         >
@@ -91,8 +98,8 @@ export default function CompanyCard({ company, onClick, solvedCount = 0 }) {
                         <span
                             className="text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg"
                             style={{
-                                background: `${diffColor}15`,
-                                border: `1px solid ${diffColor}35`,
+                                background: `${diffColor}18`,
+                                border: `1px solid ${diffColor}38`,
                                 color: diffColor,
                             }}
                         >
@@ -101,47 +108,50 @@ export default function CompanyCard({ company, onClick, solvedCount = 0 }) {
                     </div>
                 </div>
 
-                {/* Name */}
-                <h3 className="text-[17px] font-black text-slate-900 dark:text-white leading-none tracking-tight mb-0.5">
+                {/* Name + category */}
+                <h3 className="text-[16px] font-black text-slate-900 dark:text-white leading-tight tracking-tight mb-0.5">
                     {company.name}
                 </h3>
-                <p className="text-[10px] font-bold text-slate-400 dark:text-white/30 uppercase tracking-widest mb-4">
+                <p className="text-[10px] font-bold text-slate-400 dark:text-white/35 uppercase tracking-widest mb-4">
                     {company.category}
                 </p>
 
-                {/* Stats */}
+                {/* Stats — fixed equal width columns */}
                 <div className="grid grid-cols-3 gap-2 mb-4">
-                    <div className="text-center py-2.5 px-1 rounded-2xl bg-slate-50 dark:bg-white/[0.03]">
-                        <p className="text-[13px] font-black text-slate-800 dark:text-white leading-tight">{company.rounds}</p>
-                        <p className="text-[9px] font-bold text-slate-400 dark:text-white/25 uppercase mt-0.5">Rounds</p>
-                    </div>
-                    <div className="text-center py-2.5 px-1 rounded-2xl bg-slate-50 dark:bg-white/[0.03]">
-                        <p className="text-[13px] font-black text-emerald-600 dark:text-emerald-400 leading-tight">{company.salary}</p>
-                        <p className="text-[9px] font-bold text-slate-400 dark:text-white/25 uppercase mt-0.5">Salary</p>
-                    </div>
-                    <div className="text-center py-2.5 px-1 rounded-2xl bg-slate-50 dark:bg-white/[0.03]">
-                        <p className="text-[13px] font-black text-rose-500 leading-tight">{company.acceptance}</p>
-                        <p className="text-[9px] font-bold text-slate-400 dark:text-white/25 uppercase mt-0.5">Rate</p>
-                    </div>
+                    {[
+                        { val: company.rounds, sub: "Rounds", cls: "text-slate-800 dark:text-white/90" },
+                        { val: company.salary, sub: "Salary", cls: "text-emerald-600 dark:text-emerald-400" },
+                        { val: company.acceptance, sub: "Rate", cls: "text-rose-500 dark:text-rose-400" },
+                    ].map(({ val, sub, cls }) => (
+                        <div
+                            key={sub}
+                            className="flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl
+                                       bg-slate-50 dark:bg-white/[0.04]
+                                       border border-slate-100 dark:border-white/[0.06]"
+                        >
+                            <p className={`text-[12px] font-black leading-tight text-center ${cls}`}>{val}</p>
+                            <p className="text-[9px] font-bold text-slate-400 dark:text-white/25 uppercase mt-0.5">{sub}</p>
+                        </div>
+                    ))}
                 </div>
 
                 {/* Progress */}
                 <div className="mb-4">
                     <div className="flex justify-between items-center mb-1.5">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-white/25 flex items-center gap-1">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-white/30 flex items-center gap-1">
                             <Zap size={9} className="text-indigo-500" /> Progress
                         </span>
-                        <span className="text-[10px] font-black text-slate-600 dark:text-white/60">
+                        <span className="text-[10px] font-black text-slate-600 dark:text-white/55">
                             {solvedCount}/{totalQ} · {progress}%
                         </span>
                     </div>
-                    <div className="h-1.5 rounded-full overflow-hidden bg-slate-100 dark:bg-white/[0.06]">
+                    <div className="h-1.5 rounded-full overflow-hidden bg-slate-100 dark:bg-white/[0.07]">
                         <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${progress}%` }}
                             transition={{ duration: 0.9, ease: "easeOut" }}
                             className="h-full rounded-full"
-                            style={{ background: `rgba(${tier.glow},0.8)` }}
+                            style={{ background: `rgba(${tier.glow},0.85)` }}
                         />
                     </div>
                 </div>
@@ -151,7 +161,10 @@ export default function CompanyCard({ company, onClick, solvedCount = 0 }) {
                     {(company.topicFrequency || []).slice(0, 3).map(t => (
                         <span
                             key={t.name}
-                            className="text-[9px] font-black uppercase px-2 py-1 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20"
+                            className="text-[9px] font-black uppercase px-2 py-1 rounded-lg
+                                       bg-indigo-50 dark:bg-indigo-500/10
+                                       text-indigo-600 dark:text-indigo-400
+                                       border border-indigo-200 dark:border-indigo-500/20"
                         >
                             {t.name}
                         </span>
@@ -159,10 +172,13 @@ export default function CompanyCard({ company, onClick, solvedCount = 0 }) {
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between pt-3.5 border-t border-slate-100 dark:border-white/[0.06]">
+                <div className="flex items-center justify-between pt-3.5
+                                border-t border-slate-100 dark:border-white/[0.07]">
                     <div className="flex items-center gap-1.5">
                         <Code2 size={12} className="text-slate-400 dark:text-white/25" />
-                        <span className="text-[10px] font-black text-slate-400 dark:text-white/25">{totalQ} problems</span>
+                        <span className="text-[10px] font-black text-slate-400 dark:text-white/25">
+                            {totalQ} problems
+                        </span>
                     </div>
                     <motion.div
                         animate={{ x: hovered ? 3 : 0 }}

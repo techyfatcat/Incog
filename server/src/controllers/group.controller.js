@@ -64,9 +64,36 @@ export const listGroups = async (req, res) => {
 
 /* ─── POST /groups ────────────────────────────────────────────────────────── */
 export const createGroup = async (req, res) => {
+    // Detect whether this came from fetch() or a plain <form> submit.
+    // fetch sends "Content-Type: application/json"; a browser form sends
+    // "application/x-www-form-urlencoded" and also sets Accept: text/html.
+    const isAjax =
+        req.headers["content-type"]?.includes("application/json") ||
+        req.headers["x-requested-with"] === "XMLHttpRequest";
+
     try {
         const { name, description } = req.body;
-        if (!name?.trim()) return res.redirect("/groups?error=Group+name+is+required");
+
+        if (!name?.trim()) {
+            if (isAjax) {
+                return res.status(400).json({ error: "Group name is required." });
+            }
+            return res.redirect("/groups?error=Group+name+is+required");
+        }
+
+        if (name.trim().length < 2) {
+            if (isAjax) {
+                return res.status(400).json({ error: "Group name must be at least 2 characters." });
+            }
+            return res.redirect("/groups?error=Group+name+too+short");
+        }
+
+        if (name.trim().length > 60) {
+            if (isAjax) {
+                return res.status(400).json({ error: "Group name must be 60 characters or fewer." });
+            }
+            return res.redirect("/groups?error=Group+name+too+long");
+        }
 
         const inviteToken = crypto.randomBytes(16).toString("hex");
         const group = await Group.create({
@@ -77,9 +104,26 @@ export const createGroup = async (req, res) => {
             inviteToken,
         });
 
-        res.redirect(`/groups/${group._id}?success=Group+created`);
+        if (isAjax) {
+            // Populate creator so the client card can show username
+            await group.populate("creator", "username");
+            return res.status(201).json(group);
+        }
+
+        return res.redirect(`/groups/${group._id}?success=Group+created`);
+
     } catch (err) {
-        res.redirect(`/groups?error=${encodeURIComponent(err.message)}`);
+        console.error("[POST /groups]", err);
+
+        if (isAjax) {
+            // MongoDB duplicate key (unique index on name, if you have one)
+            if (err.code === 11000) {
+                return res.status(409).json({ error: "A group with that name already exists." });
+            }
+            return res.status(500).json({ error: "Server error — could not create group." });
+        }
+
+        return res.redirect(`/groups?error=${encodeURIComponent(err.message)}`);
     }
 };
 
@@ -215,8 +259,6 @@ export const joinViaInvite = async (req, res) => {
 export const regenerateInvite = async (req, res) => {
     const { groupId } = req.params;
     try {
-        // Allow any member to generate if no token exists yet,
-        // otherwise only the creator can regenerate
         const group = await Group.findOne({ _id: groupId, members: req.user._id });
         if (!group) return res.redirect(`/groups/${groupId}?error=Group+not+found`);
 

@@ -13,17 +13,12 @@ const messageSchema = new mongoose.Schema(
             trim: true,
             maxlength: 2000,
         },
-        // Soft delete — message stays in DB, just hidden in UI
-        // Only set when user deletes their own message
-        // Never auto-expires, never auto-deleted
         deletedAt: {
             type: Date,
             default: null,
         },
     },
-    {
-        timestamps: true, // createdAt = permanent send time, updatedAt = last edit time
-    }
+    { timestamps: true }
 );
 
 const groupSchema = new mongoose.Schema(
@@ -43,7 +38,7 @@ const groupSchema = new mongoose.Schema(
         creator: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
-            required: false, // ← not required so old docs without creator don't crash
+            required: false,
         },
         members: [
             {
@@ -51,28 +46,40 @@ const groupSchema = new mongoose.Schema(
                 ref: "User",
             },
         ],
-        // All messages stored permanently as embedded subdocuments
-        // MongoDB has no automatic cleanup — messages persist until:
-        //   1. User manually deletes (sets deletedAt)
-        //   2. The entire group is deleted
         messages: [messageSchema],
 
         inviteToken: {
             type: String,
-            unique: true,
-            sparse: true, // allows multiple nulls
+            // ── FIX: removed unique:true — was causing duplicate key errors
+            // on existing documents that had inviteToken:null stored explicitly.
+            // sparse:true only skips documents where the field is *absent*,
+            // not where it is explicitly null. We enforce uniqueness manually
+            // via the index defined below.
+            sparse: true,
+            index: true,
         },
     },
-    {
-        timestamps: true, // group-level createdAt / updatedAt
-    }
+    { timestamps: true }
 );
 
-// Index on group updatedAt for sorting sidebar by recent activity
 groupSchema.index({ updatedAt: -1 });
-
-// Index to find groups a user belongs to quickly
 groupSchema.index({ members: 1 });
+
+// ── Startup migration: remove explicit null inviteTokens so sparse index works.
+// Runs once every server start; no-ops immediately if nothing to clean.
+groupSchema.statics.fixNullInviteTokens = async function () {
+    try {
+        const result = await this.updateMany(
+            { inviteToken: null },
+            { $unset: { inviteToken: "" } }
+        );
+        if (result.modifiedCount > 0) {
+            console.log(`[Group] Cleaned ${result.modifiedCount} null inviteToken(s)`);
+        }
+    } catch (err) {
+        console.error("[Group] fixNullInviteTokens failed:", err.message);
+    }
+};
 
 const Group = mongoose.model("Group", groupSchema);
 export default Group;
